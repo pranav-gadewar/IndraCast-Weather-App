@@ -1,0 +1,102 @@
+weather-app/
+│
+├── backend/                  # Python weather service (separate backend)
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── routes/
+│   │   │   ├── weather.py
+│   │   │   ├── forecast.py
+│   │   │   └── history.py
+│   │   ├── services/
+│   │   │   ├── weather_fetch.py
+│   │   │   ├── prediction.py
+│   │   │   └── history_service.py
+│   │   ├── models/
+│   │   └── utils/
+│   ├── requirements.txt
+│   └── .env
+│
+├── src/
+│   │
+│   ├── app/                  # Next.js App Router
+│   │   │
+│   │   ├── layout.tsx
+│   │   ├── page.tsx          # Landing page
+│   │   │
+│   │   ├── about/
+│   │   │   └── page.tsx
+│   │   │
+│   │   ├── services/
+│   │   │   └── page.tsx      # Weather functionality page
+│   │   │
+│   │   ├── contact/
+│   │   │   └── page.tsx
+│   │   │
+│   │   ├── auth/
+│   │   │   ├── login/page.tsx
+│   │   │   └── signup/page.tsx
+│   │   │
+│   │   ├── admin/
+│   │   │   ├── layout.tsx
+│   │   │   ├── dashboard/page.tsx
+│   │   │   ├── users/page.tsx
+│   │   │   └── weather/page.tsx
+│   │   │
+│   │   └── api/
+│   │       ├── weather/
+│   │       │   └── route.ts   # Calls Python backend
+│   │       └── auth/
+│   │           └── route.ts
+│   │
+│   ├── components/
+│   │   ├── navbar/
+│   │   │   ├── Navbar.tsx
+│   │   │   └── ProfileMenu.tsx
+│   │   │
+│   │   ├── weather/
+│   │   │   ├── WeatherCard.tsx
+│   │   │   ├── ForecastCard.tsx
+│   │   │   └── HistoryChart.tsx
+│   │   │
+│   │   ├── admin/
+│   │   │   ├── AdminSidebar.tsx
+│   │   │   └── AdminHeader.tsx
+│   │   │
+│   │   └── ui/
+│   │       ├── Button.tsx
+│   │       ├── Loader.tsx
+│   │       └── Modal.tsx
+│   │
+│   ├── context/
+│   │   ├── AuthContext.tsx
+│   │   └── WeatherContext.tsx
+│   │
+│   ├── hooks/
+│   │   ├── useAuth.ts
+│   │   └── useWeather.ts
+│   │
+│   ├── lib/
+│   │   ├── firebase.ts       # Firebase config/init
+│   │   ├── api.ts            # API helpers
+│   │   └── utils.ts
+│   │
+│   ├── styles/
+│   │   └── globals.css
+│   │
+│   └── types/
+│       ├── user.ts
+│       └── weather.ts
+│
+├── firebase/
+│   ├── firebaseConfig.js
+│   ├── firestore.rules
+│   └── storage.rules
+│
+├── public/
+│   ├── images/
+│   └── icons/
+│
+├── .env.local
+├── next.config.js
+├── package.json
+└── README.md
