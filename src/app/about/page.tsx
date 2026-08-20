@@ -66,7 +66,7 @@ export default function AboutPage() {
                 Light and dark modes for comfortable viewing in any environment
               </li>
               <li>
-                Storage of searched locations for future reference and insights
+                Storage of user account profiles and search metrics in Firebase
               </li>
             </ul>
           </section>
@@ -76,40 +76,35 @@ export default function AboutPage() {
             <h2 className="text-2xl font-bold mb-4">Technology Stack</h2>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed max-w-3xl">
               IndraCast is built using a carefully selected technology stack that
-              balances performance, scalability, and developer experience —
-              making the application reliable today and extensible tomorrow.
+              balances performance, scalability, and developer experience.
             </p>
 
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-black p-6">
                 <h3 className="font-semibold mb-2">Next.js</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Powers the frontend and backend routing with server components,
-                  fast navigation, and optimized rendering.
+                  Powers frontend rendering and edge middleware routing for secure access control.
                 </p>
               </div>
 
               <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-black p-6">
-                <h3 className="font-semibold mb-2">Supabase</h3>
+                <h3 className="font-semibold mb-2">Firebase (Auth & Firestore)</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Stores searched weather data securely, enabling persistence,
-                  history tracking, and future analytics.
+                  Secures user authentication, role-based administration, system configuration, and live database persistence.
                 </p>
               </div>
 
               <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-black p-6">
-                <h3 className="font-semibold mb-2">Python</h3>
+                <h3 className="font-semibold mb-2">WeatherAPI.com</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Handles accurate weather data fetching and processing through
-                  a dedicated backend service.
+                  Delivers live station telemetry, air quality metrics, and 24-hour hourly series forecasts for Indian cities.
                 </p>
               </div>
 
               <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-black p-6">
                 <h3 className="font-semibold mb-2">Tailwind CSS</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Enables a consistent design system with rapid styling and
-                  seamless dark mode support.
+                  Enables a consistent design system with rapid styling and seamless dark mode support.
                 </p>
               </div>
             </div>
@@ -129,9 +124,9 @@ export default function AboutPage() {
           {/* Footer Note */}
           <div className="pt-12 border-t border-gray-200 dark:border-gray-800 text-center">
             <p className="text-sm text-gray-500">
-              Built with care using Next.js, Supabase, and Python.
+              Built with care using Next.js, Firebase, and WeatherAPI.com.
               <br />
-              Designed for developers, students, and everyday users across India.
+              Designed for everyday users across India.
             </p>
           </div>
         </div>

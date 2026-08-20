@@ -32,8 +32,8 @@ export default function Hero() {
         <div className="absolute top-[20%] right-[10%] h-[400px] w-[400px] rounded-full bg-yellow-200/10 blur-[100px] dark:bg-yellow-500/5" />
       </div>
 
-      <div className="mx-auto max-w-7xl px-6 py-20">
-        <div className="grid grid-cols-1 gap-20 lg:grid-cols-2 items-center">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 md:py-20">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 items-center">
           {/* Left Content */}
           <motion.div
             variants={containerVariants}
@@ -51,29 +51,29 @@ export default function Hero() {
               </span>
               India-focused Weather Dashboard
             </motion.span>
-
+ 
             <motion.h1
               variants={itemVariants}
-              className="mt-8 text-5xl md:text-7xl font-bold tracking-tight text-black dark:text-white leading-[1.1]"
+              className="mt-6 text-4xl sm:text-5xl md:text-7xl font-hero tracking-tight text-black dark:text-white leading-[1.1]"
             >
               Weather that moves
               <span className="block bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-500 bg-clip-text text-transparent">
                 with India
               </span>
             </motion.h1>
-
+ 
             <motion.p
               variants={itemVariants}
-              className="mt-8 max-w-lg text-lg md:text-xl text-gray-500 dark:text-gray-400 leading-relaxed"
+              className="mt-6 max-w-lg text-base md:text-xl text-gray-500 dark:text-gray-400 leading-relaxed"
             >
               IndraCast delivers clean, accurate, and location-specific weather
               insights for cities across the subcontinent—all in a beautifully
               minimal interface.
             </motion.p>
-
+ 
             <motion.div
               variants={itemVariants}
-              className="mt-12 flex flex-wrap gap-5"
+              className="mt-8 flex flex-wrap gap-4"
             >
               {/* <button className="group flex items-center gap-2 rounded-full bg-blue-600 px-8 py-4 text-[15px] text-white font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95">
                 Explore Weather
@@ -81,24 +81,24 @@ export default function Hero() {
               </button>
               <button className="rounded-full border border-gray-200 dark:border-white/10 px-8 py-4 text-[15px] font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-all active:scale-95">
                 Learn More
-              </button> */}
+                </button> */}
               <Link
                 href="/services"
-                className="group inline-flex items-center gap-2 rounded-full bg-blue-600 px-8 py-4 text-[15px] font-semibold text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                className="group inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3.5 md:px-8 md:py-4 text-sm md:text-[15px] font-semibold text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
               >
                 Explore Weather
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Link>
-
+ 
               <Link
                 href="/about"
-                className="inline-flex items-center rounded-full border border-gray-200 dark:border-white/10 px-8 py-4 text-[15px] font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-all active:scale-95"
+                className="inline-flex items-center rounded-full border border-gray-200 dark:border-white/10 px-6 py-3.5 md:px-8 md:py-4 text-sm md:text-[15px] font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-all active:scale-95"
               >
                 Learn More
               </Link>
             </motion.div>
           </motion.div>
-
+ 
           {/* Right Visual - Ultra Glassmorphism */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
@@ -107,9 +107,9 @@ export default function Hero() {
             className="relative"
           >
             {/* The Glass Card */}
-            <div className="relative z-10 overflow-hidden rounded-[2.5rem] border border-white/40 dark:border-white/10 bg-white/30 dark:bg-white/5 p-1 backdrop-blur-2xl shadow-2xl">
-              <div className="rounded-[2.2rem] bg-white/40 dark:bg-black/40 p-10">
-                <div className="flex items-center justify-between mb-10">
+            <div className="relative z-10 overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-white/40 dark:border-white/10 bg-white/30 dark:bg-white/5 p-1 backdrop-blur-2xl shadow-2xl">
+              <div className="rounded-[1.7rem] md:rounded-[2.2rem] bg-white/40 dark:bg-black/40 p-6 md:p-10">
+                <div className="flex items-center justify-between mb-8 md:mb-10">
                   <div>
                     <h3 className="text-sm font-medium text-gray-400 uppercase tracking-widest">
                       Current Condition

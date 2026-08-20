@@ -7,6 +7,8 @@
 /* 2. Optional: Define your base colors for IndraCast */
 @theme {
   --color-brand-blue: #2563eb;
+  --font-hero: var(--font-galindo), var(--font-geist-sans), var(--font-poppins), sans-serif;
+  --font-sans: var(--font-geist-sans), var(--font-poppins), sans-serif;
 }
 
 /* 3. Global transitions (Optional but recommended) */

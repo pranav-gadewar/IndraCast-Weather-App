@@ -42,7 +42,7 @@ export default function QuickView() {
           </span>
         </div>
 
-        <h1 className="text-5xl md:text-8xl font-bold tracking-tight mb-8 bg-gradient-to-b from-gray-900 to-gray-500 dark:from-white dark:to-white/40 bg-clip-text text-transparent">
+        <h1 className="text-5xl md:text-8xl font-hero tracking-tight mb-8 bg-gradient-to-b from-gray-900 to-gray-500 dark:from-white dark:to-white/40 bg-clip-text text-transparent">
           The world's sky, <br /> in your palm.
         </h1>
 
@@ -54,14 +54,14 @@ export default function QuickView() {
 
       {/* --- HERO IMAGE --- */}
       <div className="relative max-w-6xl mx-auto px-6 mb-32">
-        <div className="relative w-full h-[500px] md:h-[700px] flex items-center justify-center rounded-[3rem] bg-gradient-to-b from-gray-200/60 to-transparent dark:from-white/5 border border-gray-200 dark:border-white/10 overflow-hidden">
-          <div className="relative w-full h-full p-8 md:p-12">
+        <div className="relative w-full h-[300px] sm:h-[500px] md:h-[700px] flex items-center justify-center rounded-[2rem] md:rounded-[3rem] bg-gradient-to-b from-gray-200/60 to-transparent dark:from-white/5 border border-gray-200 dark:border-white/10 overflow-hidden">
+          <div className="relative w-full h-full p-4 sm:p-8 md:p-12">
             <Image
               src="/quick-view/mobile-image.png"
               alt="IndraCast App Interface"
               fill
               priority
-              className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] dark:drop-shadow-[0_35px_35px_rgba(0,0,0,0.5)]"
+              className="object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.2)] md:drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] dark:drop-shadow-[0_35px_35px_rgba(0,0,0,0.5)]"
             />
           </div>
         </div>

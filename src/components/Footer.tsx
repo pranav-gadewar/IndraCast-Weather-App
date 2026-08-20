@@ -1,4 +1,13 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+
 export default function Footer() {
+  const pathname = usePathname();
+
+  // Do not render footer on admin portal routes
+  if (pathname?.startsWith("/admin")) return null;
+
   return (
     <footer className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-black">
       <div className="mx-auto max-w-7xl px-6 py-10">

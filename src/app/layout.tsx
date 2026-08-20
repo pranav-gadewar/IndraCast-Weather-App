@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Poppins, Galindo } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import ThemeWrapper from "@/components/ThemeWrapper";
+import { PreloaderProvider } from "@/context/PreloaderContext";
+import Preloader from "@/components/Preloader";
 import "./globals.css";
 import Footer from "@/components/Footer";
 
@@ -12,6 +14,18 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const poppins = Poppins({
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-poppins",
+  subsets: ["latin"],
+});
+
+const galindo = Galindo({
+  weight: "400",
+  variable: "--font-galindo",
   subsets: ["latin"],
 });
 
@@ -32,17 +46,22 @@ export default function RootLayout({
         className={`
           ${geistSans.variable}
           ${geistMono.variable}
+          ${poppins.variable}
+          ${galindo.variable}
           antialiased
           transition-colors
           duration-300
         `}
       >
         <ThemeWrapper>
-          <Navbar />
-          <main className="pt-6 bg-white dark:bg-black text-black dark:text-white">
-            {children}
-          </main>
-          <Footer />
+          <PreloaderProvider>
+            <Preloader />
+            <Navbar />
+            <main className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
+              {children}
+            </main>
+            <Footer />
+          </PreloaderProvider>
         </ThemeWrapper>
       </body>
     </html>
