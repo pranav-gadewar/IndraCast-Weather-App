@@ -84,17 +84,18 @@ export default function LoginPage() {
       } else {
         router.push("/");
       }
-    } catch (err: any) {
-      if (err.message === "MAINTENANCE_MODE") {
+    } catch (err: unknown) {
+      const errorObj = err as { code?: string; message?: string };
+      if (errorObj.message === "MAINTENANCE_MODE") {
         setError("The website is currently under maintenance. Please try again later.");
       } else if (
-        err.code === "auth/invalid-credential" ||
-        err.code === "auth/user-not-found" ||
-        err.code === "auth/wrong-password"
+        errorObj.code === "auth/invalid-credential" ||
+        errorObj.code === "auth/user-not-found" ||
+        errorObj.code === "auth/wrong-password"
       ) {
         setError("Invalid email or password.");
       } else {
-        setError(err.message || "Failed to sign in. Please try again.");
+        setError(errorObj.message || "Failed to sign in. Please try again.");
       }
     } finally {
       setLoading(false);

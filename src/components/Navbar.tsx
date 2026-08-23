@@ -11,14 +11,12 @@ import {
   User,
   ChevronDown,
   LogOut,
-  Clock,
-  Settings,
   Shield,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { auth, db } from "@/lib/firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut, User as FirebaseUser } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { setAuthCookies, clearAuthCookies } from "@/lib/cookieUtils";
 import { usePreloader } from "@/context/PreloaderContext";
@@ -33,14 +31,22 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
-  const [user, setUser] = useState<any>(null);
-  const [userData, setUserData] = useState<any>(null);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    setMenuOpen(false);
+  }
+
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [userData, setUserData] = useState<{ name?: string; email?: string; role?: string } | null>(null);
 
   const profileRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => setMounted(true), []);
-  useEffect(() => setMenuOpen(false), [pathname]);
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   /* 🔥 Listen Firebase Auth State & Sync Cookies */
   useEffect(() => {

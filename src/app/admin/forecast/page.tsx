@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import {
   CloudSun,
   CloudRain,
@@ -10,7 +11,6 @@ import {
   AlertTriangle,
   Send,
   CheckCircle,
-  RefreshCw,
   Search,
   MapPin,
   Compass,
@@ -94,7 +94,7 @@ export default function AdminForecastPage() {
         const data = await fetchLiveWeatherFromApi(currentQuery);
         setTelemetry(data);
         incrementWeatherQueries();
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error fetching WeatherAPI.com telemetry:", err);
         setSearchError("Failed to fetch live weather telemetry.");
       } finally {
@@ -368,7 +368,7 @@ export default function AdminForecastPage() {
           {!loading && telemetry?.icon && (
             <div className="flex items-center gap-3">
               <div className="h-16 w-16 relative bg-white/20 dark:bg-black/20 rounded-2xl p-2 border border-white/20">
-                <img src={telemetry.icon} alt="Weather Icon" className="h-full w-full object-contain" />
+                <Image src={telemetry.icon} alt="Weather Icon" width={64} height={64} className="h-full w-full object-contain" />
               </div>
               <div>
                 <p className="text-xl font-black text-slate-900 dark:text-white leading-tight">
@@ -508,7 +508,7 @@ export default function AdminForecastPage() {
                 <div className="flex items-center gap-3">
                   {day.icon && (
                     <div className="h-10 w-10 relative bg-white/20 dark:bg-black/25 rounded-lg p-1">
-                      <img src={day.icon} alt="Weather Icon" className="h-full w-full object-contain" />
+                      <Image src={day.icon} alt="Weather Icon" width={40} height={40} className="h-full w-full object-contain" />
                     </div>
                   )}
                   <div className="text-right">

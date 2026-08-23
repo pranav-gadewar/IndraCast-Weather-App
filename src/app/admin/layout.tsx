@@ -25,8 +25,14 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
-  const [adminUser, setAdminUser] = useState<any>(null);
+  const [adminUser, setAdminUser] = useState<Record<string, unknown> | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [prevPath, setPrevPath] = useState(pathname);
+
+  if (prevPath !== pathname) {
+    setPrevPath(pathname);
+    setSidebarOpen(false);
+  }
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
@@ -51,10 +57,6 @@ export default function AdminLayout({
 
     return () => unsub();
   }, [router]);
-
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [pathname]);
 
   if (loading) {
     return (

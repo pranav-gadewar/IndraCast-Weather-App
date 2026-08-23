@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Settings, Sliders, Shield, Save, CheckCircle, HelpCircle, Activity, Globe, ToggleLeft, ToggleRight } from "lucide-react";
+import { Settings, Sliders, Shield, Save, CheckCircle, HelpCircle, Activity, ToggleLeft, ToggleRight } from "lucide-react";
 import { getSystemSettings, updateSystemSettings } from "@/lib/systemSettings";
 
 export default function AdminSettingsPage() {

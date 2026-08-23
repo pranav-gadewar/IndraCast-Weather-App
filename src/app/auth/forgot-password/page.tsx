@@ -22,8 +22,9 @@ export default function ForgotPasswordPage() {
       await sendPasswordResetEmail(auth, email);
 
       setMessage("Password reset link sent! Check your email.");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorObj = err as { message?: string };
+      setError(errorObj.message || "Failed to send reset email.");
     } finally {
       setLoading(false);
     }

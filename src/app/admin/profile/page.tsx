@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { User, Mail, Shield, MapPin, Phone, CheckCircle, Save, KeyRound, ArrowRight } from "lucide-react";
+import { User, Mail, Shield, MapPin, Phone, CheckCircle, Save, KeyRound } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
-import { onAuthStateChanged, sendPasswordResetEmail } from "firebase/auth";
+import { onAuthStateChanged, sendPasswordResetEmail, User as FirebaseUser } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 export default function AdminProfilePage() {
@@ -11,7 +11,7 @@ export default function AdminProfilePage() {
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
 
   const [form, setForm] = useState({
     name: "",

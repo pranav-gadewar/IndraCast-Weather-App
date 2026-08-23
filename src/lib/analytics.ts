@@ -7,7 +7,7 @@ export async function incrementWeatherQueries(): Promise<number> {
     await setDoc(docRef, { count: increment(1) }, { merge: true });
     const snap = await getDoc(docRef);
     return snap.exists() ? snap.data().count || 1 : 1;
-  } catch (err) {
+  } catch {
     return 0;
   }
 }
@@ -16,7 +16,7 @@ export async function getWeatherQueriesCount(): Promise<number> {
   try {
     const snap = await getDoc(doc(db, "analytics", "queries"));
     return snap.exists() ? snap.data().count || 0 : 0;
-  } catch (err) {
+  } catch {
     return 0;
   }
 }

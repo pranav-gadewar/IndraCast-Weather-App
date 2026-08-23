@@ -4,7 +4,7 @@ export default function AboutPage() {
       {/* Background accents */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute -top-32 left-1/3 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
-        <div className="absolute top-80 right-16 h-80 w-80 rounded-full bg-yellow-400/20 blur-3xl" />
+        <div className="absolute top-80 right-16 h-80 w-80 rounded-full bg-amber-400/20 blur-3xl" />
       </div>
 
       <div className="mx-auto max-w-5xl px-6 py-28">
@@ -14,14 +14,14 @@ export default function AboutPage() {
             About IndraCast
           </span>
 
-          <h1 className="mt-6 text-4xl md:text-5xl font-extrabold leading-tight">
+          <h1 className="mt-6 text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
             Built for clarity.
-            <span className="block bg-gradient-to-r from-blue-600 to-yellow-400 bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-blue-600 to-amber-500 bg-clip-text text-transparent">
               Designed for India.
             </span>
           </h1>
 
-          <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-600 dark:text-gray-300">
+          <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-600 dark:text-gray-400">
             IndraCast is a modern, India-first weather dashboard focused on
             accuracy, simplicity, and thoughtful design — built to make weather
             information easy to consume and genuinely useful.
@@ -33,7 +33,7 @@ export default function AboutPage() {
           {/* Why */}
           <section>
             <h2 className="text-2xl font-bold mb-4">Why IndraCast?</h2>
-            <div className="space-y-4 text-gray-700 dark:text-gray-300 leading-relaxed">
+            <div className="space-y-4 text-gray-600 dark:text-gray-400 leading-relaxed">
               <p>
                 Most weather applications today are cluttered with ads, packed
                 with unnecessary features, or lack regional focus. They often
@@ -55,7 +55,7 @@ export default function AboutPage() {
               What Does IndraCast Provide?
             </h2>
 
-            <ul className="space-y-3 list-disc list-inside text-gray-700 dark:text-gray-300">
+            <ul className="space-y-3 list-disc list-inside text-gray-600 dark:text-gray-400">
               <li>
                 Real-time weather conditions for cities and states across India
               </li>
@@ -74,7 +74,7 @@ export default function AboutPage() {
           {/* Tech Stack */}
           <section>
             <h2 className="text-2xl font-bold mb-4">Technology Stack</h2>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed max-w-3xl">
+            <p className="text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
               IndraCast is built using a carefully selected technology stack that
               balances performance, scalability, and developer experience.
             </p>
@@ -113,7 +113,7 @@ export default function AboutPage() {
           {/* Vision */}
           <section>
             <h2 className="text-2xl font-bold mb-4">Vision</h2>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed max-w-3xl">
+            <p className="text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
               IndraCast is designed as a foundation rather than a finished idea.
               While the current focus is on clarity and reliability, the long-term
               vision includes deeper insights, historical trends, forecasts, and

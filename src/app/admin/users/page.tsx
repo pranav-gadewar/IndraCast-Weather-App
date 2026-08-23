@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, Search, UserCheck, ShieldAlert, Trash2, ShieldCheck, RefreshCw } from "lucide-react";
+import { Users, Search, UserCheck, Trash2, ShieldCheck } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
@@ -16,7 +16,7 @@ interface UserProfile {
   phone?: string;
   gender?: string;
   age?: string;
-  createdAt?: any;
+  createdAt?: unknown;
 }
 
 export default function AdminUsersPage() {
@@ -39,8 +39,9 @@ export default function AdminUsersPage() {
 
       // Show regular users (role !== 'admin')
       setUsers(fetched.filter((u) => u.role !== "admin"));
-    } catch (err: any) {
-      if (err.code === "permission-denied" || err.message?.includes("permissions")) {
+    } catch (err: unknown) {
+      const errorObj = err as { code?: string; message?: string };
+      if (errorObj.code === "permission-denied" || errorObj.message?.includes("permissions")) {
         setPermissionDenied(true);
       }
     } finally {

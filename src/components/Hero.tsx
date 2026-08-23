@@ -29,7 +29,7 @@ export default function Hero() {
       {/* Dynamic Background Glows */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-[10%] left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[120px] dark:bg-blue-400/5" />
-        <div className="absolute top-[20%] right-[10%] h-[400px] w-[400px] rounded-full bg-yellow-200/10 blur-[100px] dark:bg-yellow-500/5" />
+        <div className="absolute top-[20%] right-[10%] h-[400px] w-[400px] rounded-full bg-amber-200/10 blur-[100px] dark:bg-amber-500/5" />
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 md:py-20">
@@ -57,7 +57,7 @@ export default function Hero() {
               className="mt-6 text-4xl sm:text-5xl md:text-7xl font-hero tracking-tight text-black dark:text-white leading-[1.1]"
             >
               Weather that moves
-              <span className="block bg-gradient-to-r from-blue-600 via-blue-400 to-yellow-500 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-blue-600 to-amber-500 bg-clip-text text-transparent">
                 with India
               </span>
             </motion.h1>
@@ -124,7 +124,7 @@ export default function Hero() {
                 <div className="space-y-8">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-5">
-                      <div className="p-3 rounded-2xl bg-yellow-400/20 text-yellow-500">
+                      <div className="p-3 rounded-2xl bg-amber-400/20 text-amber-500">
                         <CloudSun className="h-8 w-8" />
                       </div>
                       <span className="text-xl font-medium text-gray-700 dark:text-gray-200">

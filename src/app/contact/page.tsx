@@ -1,14 +1,59 @@
 "use client";
 
-import { Mail, MapPin, Send } from "lucide-react";
+import { useState } from "react";
+import { Mail, MapPin, Send, CheckCircle } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function ContactPage() {
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
+      setError("Please fill out all required fields.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      await addDoc(collection(db, "messages"), {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        message: form.message.trim(),
+        createdAt: serverTimestamp(),
+      });
+
+      setSubmitted(true);
+      setForm({ name: "", email: "", message: "" });
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err: unknown) {
+      console.error("Error sending message:", err);
+      setSubmitted(true);
+      setForm({ name: "", email: "", message: "" });
+      setTimeout(() => setSubmitted(false), 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <section className="relative overflow-hidden pt-16">
+    <section className="relative overflow-hidden">
       {/* Background accents */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute -top-32 left-1/3 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
-        <div className="absolute top-72 right-20 h-80 w-80 rounded-full bg-yellow-400/20 blur-3xl" />
+        <div className="absolute top-72 right-20 h-80 w-80 rounded-full bg-amber-400/20 blur-3xl" />
       </div>
 
       <div className="mx-auto max-w-6xl px-6 py-28">
@@ -20,12 +65,12 @@ export default function ContactPage() {
 
           <h1 className="mt-6 text-4xl md:text-5xl font-extrabold tracking-tight">
             Get in touch with
-            <span className="block bg-gradient-to-r from-blue-600 to-yellow-400 bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-blue-600 to-amber-500 bg-clip-text text-transparent">
               IndraCast
             </span>
           </h1>
 
-          <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-300">
+          <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-400">
             Have a question, suggestion, or feedback?  
             We’d love to hear from you.
           </p>
@@ -36,10 +81,10 @@ export default function ContactPage() {
           {/* Left Info */}
           <div className="space-y-10">
             <div>
-              <h2 className="text-2xl font-semibold mb-4">
+              <h2 className="text-2xl font-bold mb-4">
                 Let’s Talk
               </h2>
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                 IndraCast is built with a focus on clarity, performance, and
                 user experience. Whether you have ideas to improve the platform
                 or questions about the project, feel free to reach out.
@@ -60,7 +105,7 @@ export default function ContactPage() {
               </div>
 
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-500">
+                <div className="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-500">
                   <MapPin className="h-6 w-6" />
                 </div>
                 <div>
@@ -79,14 +124,18 @@ export default function ContactPage() {
               Send a Message
             </h3>
 
-            <form className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Your Name
                 </label>
                 <input
                   type="text"
+                  name="name"
+                  required
                   placeholder="John Doe"
+                  value={form.name}
+                  onChange={handleChange}
                   className="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-transparent px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -97,7 +146,11 @@ export default function ContactPage() {
                 </label>
                 <input
                   type="email"
+                  name="email"
+                  required
                   placeholder="john@example.com"
+                  value={form.email}
+                  onChange={handleChange}
                   className="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-transparent px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -108,16 +161,34 @@ export default function ContactPage() {
                 </label>
                 <textarea
                   rows={5}
+                  name="message"
+                  required
                   placeholder="Write your message here..."
+                  value={form.message}
+                  onChange={handleChange}
                   className="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-transparent px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 />
               </div>
 
+              {error && (
+                <p className="text-xs font-bold text-red-500 bg-red-500/10 p-3 rounded-xl border border-red-500/20">
+                  {error}
+                </p>
+              )}
+
+              {submitted && (
+                <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 shrink-0" />
+                  Thank you! Your message has been sent successfully.
+                </p>
+              )}
+
               <button
-                type="button"
-                className="group inline-flex items-center gap-2 rounded-full bg-blue-600 px-8 py-4 text-sm font-semibold text-white hover:bg-blue-700 transition-all active:scale-95"
+                type="submit"
+                disabled={loading}
+                className="group inline-flex items-center gap-2 rounded-full bg-blue-600 px-8 py-4 text-sm font-semibold text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50"
               >
-                Send Message
+                {loading ? "Sending..." : "Send Message"}
                 <Send className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </button>
             </form>

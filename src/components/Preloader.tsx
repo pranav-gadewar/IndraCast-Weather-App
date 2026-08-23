@@ -12,7 +12,8 @@ export default function Preloader() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!preloaderType) return null;
@@ -27,7 +28,7 @@ export default function Preloader() {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.4 }}
         className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center select-none transition-colors duration-300 ${
-          isDark ? "bg-slate-955 bg-slate-950 text-white" : "bg-white text-slate-900"
+          isDark ? "bg-slate-950 text-white" : "bg-white text-slate-900"
         }`}
       >
         {/* Glow ambient spots */}

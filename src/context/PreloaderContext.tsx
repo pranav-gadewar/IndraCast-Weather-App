@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
 
 type PreloaderType = "initial" | "login" | "logout" | null;
 
@@ -14,12 +13,10 @@ interface PreloaderContextProps {
 const PreloaderContext = createContext<PreloaderContextProps | undefined>(undefined);
 
 export function PreloaderProvider({ children }: { children: React.ReactNode }) {
-  const [preloaderType, setPreloaderType] = useState<PreloaderType>(null);
-  const pathname = usePathname();
+  const [preloaderType, setPreloaderType] = useState<PreloaderType>("initial");
 
-  // Trigger initial visit preloader on every mount/refresh
+  // Clear initial visit preloader after timeout
   useEffect(() => {
-    setPreloaderType("initial");
     const timer = setTimeout(() => {
       setPreloaderType(null);
     }, 2500);

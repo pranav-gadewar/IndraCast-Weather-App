@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import {
   Search,
   MapPin,
@@ -11,7 +12,6 @@ import {
   RefreshCw,
   Calendar,
   Thermometer,
-  CloudSun,
   CloudRain,
   Activity,
 } from "lucide-react";
@@ -144,14 +144,14 @@ export default function ServicesPage() {
   };
 
   return (
-    <div className="pt-16 min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white relative">
+    <div className="pt-16 min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white relative overflow-x-hidden">
       {/* Background ambient glows */}
       <div className="absolute top-0 left-1/4 h-[400px] w-[400px] rounded-full bg-blue-500/10 blur-3xl -z-10 pointer-events-none" />
-      <div className="absolute top-80 right-1/4 h-[350px] w-[350px] rounded-full bg-yellow-400/10 blur-3xl -z-10 pointer-events-none" />
+      <div className="absolute top-80 right-1/4 h-[350px] w-[350px] rounded-full bg-amber-400/10 blur-3xl -z-10 pointer-events-none" />
 
       {/* HERO SECTION */}
       <section className="py-12 text-center px-6 max-w-7xl mx-auto">
-        <h1 className="text-4xl md:text-6xl font-black tracking-tight">
+        <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight break-words">
           Live Weather Services
           <span className="block bg-gradient-to-r from-blue-600 to-amber-500 bg-clip-text text-transparent">
             OpenWeatherMap Telemetry
@@ -229,7 +229,7 @@ export default function ServicesPage() {
             {!fetchingWeather && weatherData?.icon && (
               <div className="flex items-center gap-3">
                 <div className="h-16 w-16 relative bg-white/20 dark:bg-black/20 rounded-2xl p-2 border border-white/20">
-                  <img src={weatherData.icon} alt="Weather Icon" className="h-full w-full object-contain" />
+                  <Image src={weatherData.icon} alt="Weather Icon" width={64} height={64} className="h-full w-full object-contain" />
                 </div>
                 <div>
                   <p className="text-xl font-black text-slate-900 dark:text-white leading-tight">
@@ -266,7 +266,7 @@ export default function ServicesPage() {
 
       {/* METRICS 6-TILE GRID */}
       <section className="py-4 px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           <ForecastMetricCard
             title="Temp Spectrum"
             value={fetchingWeather ? "..." : `${weatherData?.temp}°C`}
@@ -366,7 +366,7 @@ export default function ServicesPage() {
                   <div className="flex items-center gap-3">
                     {day.icon && (
                       <div className="h-10 w-10 relative bg-white/20 dark:bg-black/25 rounded-lg p-1">
-                        <img src={day.icon} alt="Weather Icon" className="h-full w-full object-contain" />
+                        <Image src={day.icon} alt="Weather Icon" width={40} height={40} className="h-full w-full object-contain" />
                       </div>
                     )}
                     <div className="text-right">
@@ -400,9 +400,9 @@ function ForecastMetricCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4 shadow-sm flex flex-col justify-between hover:border-blue-500/30 transition-all duration-200">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest shrink-0">{title}</span>
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4 shadow-sm flex flex-col justify-between hover:border-blue-500/30 transition-all duration-200 min-w-0">
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest min-w-0">{title}</span>
         <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shrink-0">{icon}</div>
       </div>
       <div className="overflow-hidden">

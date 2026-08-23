@@ -111,15 +111,16 @@ export default function SignupPage() {
 
       // 4️⃣ Redirect to landing page logged in
       router.push("/");
-    } catch (err: any) {
-      if (err.message === "REGISTRATION_PAUSED") {
+    } catch (err: unknown) {
+      const errorObj = err as { code?: string; message?: string };
+      if (errorObj.message === "REGISTRATION_PAUSED") {
         setError("New user registrations are currently paused by system administration.");
-      } else if (err.code === "auth/email-already-in-use") {
+      } else if (errorObj.code === "auth/email-already-in-use") {
         setError("This email address is already in use.");
-      } else if (err.code === "auth/weak-password") {
+      } else if (errorObj.code === "auth/weak-password") {
         setError("Password should be at least 6 characters long.");
       } else {
-        setError(err.message || "Failed to create account.");
+        setError(errorObj.message || "Failed to create account.");
       }
     } finally {
       setLoading(false);

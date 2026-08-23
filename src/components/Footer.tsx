@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export default function Footer() {
@@ -25,19 +26,31 @@ export default function Footer() {
           </div>
 
           {/* Links */}
-          <div className="flex gap-6 text-sm font-medium">
-            <a
+          <div className="flex flex-wrap justify-center gap-6 text-sm font-medium">
+            <Link
               href="/"
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition"
+              className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
             >
               Home
-            </a>
-            <a
+            </Link>
+            <Link
+              href="/services"
+              className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
+            >
+              Services
+            </Link>
+            <Link
               href="/about"
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition"
+              className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
             >
               About
-            </a>
+            </Link>
+            <Link
+              href="/contact"
+              className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
+            >
+              Contact
+            </Link>
           </div>
         </div>
 

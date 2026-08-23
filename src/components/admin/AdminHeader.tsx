@@ -9,8 +9,16 @@ import { clearAuthCookies } from "@/lib/cookieUtils";
 import { useRouter } from "next/navigation";
 import { usePreloader } from "@/context/PreloaderContext";
 
+export interface AdminUser {
+  uid?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  [key: string]: unknown;
+}
+
 interface AdminHeaderProps {
-  adminUser: any;
+  adminUser?: AdminUser | null;
   onToggleSidebar?: () => void;
   isSidebarOpen?: boolean;
 }
@@ -25,7 +33,10 @@ export default function AdminHeader({
   const router = useRouter();
   const { triggerPreloader } = usePreloader();
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const isDark = resolvedTheme === "dark";
 

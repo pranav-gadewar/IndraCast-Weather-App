@@ -25,7 +25,7 @@ const services = [
     description:
       "Manually check the current weather of any Indian city or state with fast and accurate results.",
     icon: CloudSun,
-    color: "text-yellow-500",
+    color: "text-amber-500",
   },
   {
     title: "Weather Search History",
@@ -42,7 +42,7 @@ export default function Services() {
       {/* Background accents */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute left-10 top-20 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
-        <div className="absolute right-10 bottom-20 h-64 w-64 rounded-full bg-yellow-400/10 blur-3xl" />
+        <div className="absolute right-10 bottom-20 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl" />
       </div>
 
       <div className="mx-auto max-w-7xl px-6">
@@ -54,12 +54,12 @@ export default function Services() {
 
           <h2 className="mt-6 text-3xl md:text-4xl font-extrabold">
             Everything you need to stay
-            <span className="block bg-gradient-to-r from-blue-600 to-yellow-400 bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-blue-600 to-amber-500 bg-clip-text text-transparent">
               weather-aware
             </span>
           </h2>
 
-          <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-600 dark:text-gray-300">
+          <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-600 dark:text-gray-400">
             IndraCast provides a focused set of weather services designed
             specifically for Indian locations — simple, fast, and reliable.
           </p>

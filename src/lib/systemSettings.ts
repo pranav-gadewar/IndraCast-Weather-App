@@ -6,7 +6,7 @@ export interface SystemSettings {
   userRegistration: boolean;
   tempUnit: "C" | "F";
   refreshRate: string;
-  updatedAt?: any;
+  updatedAt?: unknown;
 }
 
 const DEFAULT_SETTINGS: SystemSettings = {
