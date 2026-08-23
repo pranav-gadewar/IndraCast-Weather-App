@@ -19,6 +19,7 @@ import {
   Sun,
   ArrowUpRight,
   ArrowDownRight,
+  RefreshCw,
 } from "lucide-react";
 
 import { auth, db } from "@/lib/firebase";
@@ -50,8 +51,41 @@ export default function AdminDashboardPage() {
   const [normalUsers, setNormalUsers] = useState<UserProfile[]>([]);
   const [queriesCount, setQueriesCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
+
+  const fetchDashboardData = async () => {
+    try {
+      setPermissionDenied(false);
+
+      // 1️⃣ Fetch System Settings (Live)
+      const settings = await getSystemSettings();
+      setSystemSettings(settings);
+
+      // 2️⃣ Fetch Weather Queries Count (Live from Firestore)
+      const qCount = await getWeatherQueriesCount();
+      setQueriesCount(qCount);
+
+      // 3️⃣ Fetch User Registry (Live from Firestore)
+      const usersCol = collection(db, "users");
+      const snapshot = await getDocs(usersCol);
+
+      const allUsers: UserProfile[] = [];
+      snapshot.forEach((doc) => {
+        allUsers.push({ id: doc.id, ...doc.data() });
+      });
+
+      // Filter OUT Admin profiles so ONLY normal users ('user' role) are listed
+      const filteredUsers = allUsers.filter((u) => u.role !== "admin");
+      setNormalUsers(filteredUsers);
+    } catch (err: unknown) {
+      const errorObj = err as { code?: string; message?: string };
+      if (errorObj.code === "permission-denied" || errorObj.message?.includes("permissions")) {
+        setPermissionDenied(true);
+      }
+    }
+  };
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
@@ -60,42 +94,19 @@ export default function AdminDashboardPage() {
         return;
       }
 
-      try {
-        setLoading(true);
-        setPermissionDenied(false);
-
-        // 1️⃣ Fetch System Settings (Live)
-        const settings = await getSystemSettings();
-        setSystemSettings(settings);
-
-        // 2️⃣ Fetch Weather Queries Count (Live from Firestore)
-        const qCount = await getWeatherQueriesCount();
-        setQueriesCount(qCount);
-
-        // 3️⃣ Fetch User Registry (Live from Firestore)
-        const usersCol = collection(db, "users");
-        const snapshot = await getDocs(usersCol);
-
-        const allUsers: UserProfile[] = [];
-        snapshot.forEach((doc) => {
-          allUsers.push({ id: doc.id, ...doc.data() });
-        });
-
-        // Filter OUT Admin profiles so ONLY normal users ('user' role) are listed
-        const filteredUsers = allUsers.filter((u) => u.role !== "admin");
-        setNormalUsers(filteredUsers);
-      } catch (err: unknown) {
-        const errorObj = err as { code?: string; message?: string };
-        if (errorObj.code === "permission-denied" || errorObj.message?.includes("permissions")) {
-          setPermissionDenied(true);
-        }
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      await fetchDashboardData();
+      setLoading(false);
     });
 
     return () => unsub();
   }, []);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchDashboardData();
+    setTimeout(() => setRefreshing(false), 600);
+  };
 
   return (
     <div className="space-y-6 md:space-y-8 max-w-7xl mx-auto">
@@ -110,18 +121,30 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        {/* Live System Status Indicator */}
-        {systemSettings?.maintenanceMode ? (
-          <div className="px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-2 self-start sm:self-auto">
-            <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-            Maintenance Mode Active
-          </div>
-        ) : (
-          <div className="px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-2 self-start sm:self-auto">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            Live & Operational
-          </div>
-        )}
+        {/* Live System Status Indicator & Refresh Button */}
+        <div className="flex items-center gap-3 self-start sm:self-auto flex-wrap">
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing || loading}
+            className="px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+            title="Refresh live dashboard telemetry"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 text-blue-500 ${refreshing ? "animate-spin" : ""}`} />
+            <span>Refresh</span>
+          </button>
+
+          {systemSettings?.maintenanceMode ? (
+            <div className="px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+              Maintenance Active
+            </div>
+          ) : (
+            <div className="px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              Live & Operational
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Permission Notice Banner */}

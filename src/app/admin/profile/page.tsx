@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { User, Mail, Shield, MapPin, Phone, CheckCircle, Save, KeyRound } from "lucide-react";
+import { User, Mail, Shield, MapPin, Phone, CheckCircle, Save, KeyRound, RefreshCw } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, sendPasswordResetEmail, User as FirebaseUser } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 export default function AdminProfilePage() {
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
@@ -22,6 +23,25 @@ export default function AdminProfilePage() {
     role: "admin",
   });
 
+  const loadProfile = async (firebaseUser: FirebaseUser) => {
+    try {
+      const docSnap = await getDoc(doc(db, "users", firebaseUser.uid));
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setForm({
+          name: data.name || "",
+          email: data.email || firebaseUser.email || "",
+          phone: data.phone || "",
+          city: data.city || "",
+          state: data.state || "",
+          role: data.role || "admin",
+        });
+      }
+    } catch (err) {
+      console.error("Error loading profile:", err);
+    }
+  };
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!firebaseUser) {
@@ -30,28 +50,20 @@ export default function AdminProfilePage() {
       }
 
       setUser(firebaseUser);
-      try {
-        const docSnap = await getDoc(doc(db, "users", firebaseUser.uid));
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setForm({
-            name: data.name || "",
-            email: data.email || firebaseUser.email || "",
-            phone: data.phone || "",
-            city: data.city || "",
-            state: data.state || "",
-            role: data.role || "admin",
-          });
-        }
-      } catch (err) {
-        console.error("Error loading profile:", err);
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      await loadProfile(firebaseUser);
+      setLoading(false);
     });
 
     return () => unsub();
   }, []);
+
+  const handleRefreshProfile = async () => {
+    if (!user) return;
+    setRefreshing(true);
+    await loadProfile(user);
+    setTimeout(() => setRefreshing(false), 600);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -110,13 +122,25 @@ export default function AdminProfilePage() {
       <div className="absolute bottom-10 left-1/4 h-[300px] w-[300px] rounded-full bg-amber-500/10 blur-3xl -z-10 pointer-events-none" />
 
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
-          <User className="h-8 w-8 text-amber-500" /> Admin Account Profile
-        </h1>
-        <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1.5">
-          Verify security credentials, administrative privileges, and contact vectors.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2.5">
+            <User className="h-7 w-7 text-amber-500" /> Admin Account Profile
+          </h1>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">
+            Verify security credentials, administrative privileges, and contact vectors.
+          </p>
+        </div>
+
+        <button
+          onClick={handleRefreshProfile}
+          disabled={refreshing || loading}
+          className="px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-95 disabled:opacity-50 self-start sm:self-auto"
+          title="Refresh admin profile"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 text-amber-500 ${refreshing ? "animate-spin" : ""}`} />
+          <span>Refresh</span>
+        </button>
       </div>
 
       {/* Main Glassmorphic Profile Box */}

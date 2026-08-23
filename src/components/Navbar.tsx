@@ -254,11 +254,11 @@ export default function Navbar() {
 
       {/* MOBILE DRAWER */}
       {menuOpen && (
-        <div className="md:hidden absolute w-full bg-white dark:bg-black border-b px-4 py-4 space-y-2">
-          <MobileNavLink href="/">Home</MobileNavLink>
-          <MobileNavLink href="/about">About</MobileNavLink>
-          <MobileNavLink href="/services">Services</MobileNavLink>
-          <MobileNavLink href="/contact">Contact</MobileNavLink>
+        <div className="md:hidden absolute top-14 left-0 w-full bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-b border-gray-200 dark:border-white/10 px-4 py-4 space-y-1 shadow-2xl z-50">
+          <MobileNavLink href="/" active={pathname === "/"}>Home</MobileNavLink>
+          <MobileNavLink href="/services" active={pathname === "/services"}>Services</MobileNavLink>
+          <MobileNavLink href="/about" active={pathname === "/about"}>About</MobileNavLink>
+          <MobileNavLink href="/contact" active={pathname === "/contact"}>Contact</MobileNavLink>
         </div>
       )}
     </nav>
@@ -273,7 +273,7 @@ function NavLink({ href, children, active }: { href: string; children: React.Rea
       href={href}
       className={`text-sm font-medium hover:text-blue-500 transition-colors ${
         active
-          ? "text-blue-600 dark:text-blue-400 font-semibold"
+          ? "text-blue-600 dark:text-blue-400 font-bold"
           : "text-gray-600 dark:text-gray-400"
       }`}
     >
@@ -282,11 +282,15 @@ function NavLink({ href, children, active }: { href: string; children: React.Rea
   );
 }
 
-function MobileNavLink({ href, children }: { href: string; children: React.ReactNode }) {
+function MobileNavLink({ href, children, active }: { href: string; children: React.ReactNode; active: boolean }) {
   return (
     <Link
       href={href}
-      className="block px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-sm font-medium"
+      className={`block px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
+        active
+          ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+      }`}
     >
       {children}
     </Link>

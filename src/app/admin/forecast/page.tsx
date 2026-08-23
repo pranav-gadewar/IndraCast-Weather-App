@@ -17,6 +17,7 @@ import {
   Clock,
   Calendar,
   Activity,
+  RefreshCw,
 } from "lucide-react";
 
 import { db } from "@/lib/firebase";
@@ -61,6 +62,7 @@ export default function AdminForecastPage() {
   // Weather telemetry state
   const [telemetry, setTelemetry] = useState<WeatherApiResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchError, setSearchError] = useState("");
 
   // Broadcast Alert state
@@ -104,6 +106,21 @@ export default function AdminForecastPage() {
 
     loadLiveWeather();
   }, [currentQuery]);
+
+  const handleRefreshTelemetry = async () => {
+    try {
+      setRefreshing(true);
+      setSearchError("");
+      const data = await fetchLiveWeatherFromApi(currentQuery);
+      setTelemetry(data);
+      incrementWeatherQueries();
+    } catch (err: unknown) {
+      console.error("Error refreshing weather telemetry:", err);
+      setSearchError("Failed to refresh live weather telemetry.");
+    } finally {
+      setTimeout(() => setRefreshing(false), 600);
+    }
+  };
 
   // Handle Autocomplete fetch as the user types
   useEffect(() => {
@@ -203,6 +220,16 @@ export default function AdminForecastPage() {
             WeatherAPI.com high-precision telemetry, geocoded autocomplete search, & daily forecasts.
           </p>
         </div>
+
+        <button
+          onClick={handleRefreshTelemetry}
+          disabled={refreshing || loading}
+          className="px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-95 disabled:opacity-50 self-start sm:self-auto"
+          title="Refresh live weather telemetry"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 text-amber-500 ${refreshing ? "animate-spin" : ""}`} />
+          <span>Refresh Forecast</span>
+        </button>
       </div>
 
       {/* LOCATION SELECTION CONTROLS PANEL */}

@@ -74,10 +74,10 @@ export default function AdminSettingsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
-            <Settings className="h-8 w-8 text-amber-500 animate-spin-slow" /> System Configurations
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2.5">
+            <Settings className="h-7 w-7 text-amber-500" /> System Configurations
           </h1>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1.5">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">
             Manage global variables, operational modes, permissions, and default telemetry systems.
           </p>
         </div>
