@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import { setAuthCookies } from "@/lib/cookieUtils";
 
 import { incrementWeatherQueries } from "@/lib/analytics";
 import {
@@ -42,10 +43,16 @@ export default function ServicesPage() {
 
   /* 🔐 Auth Protection */
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         router.replace("/auth/login?redirect=/services");
       } else {
+        try {
+          const token = await user.getIdToken();
+          setAuthCookies(token, "user");
+        } catch (err) {
+          console.warn("Could not sync cookies on services page mount:", err);
+        }
         setLoading(false);
       }
     });
@@ -126,6 +133,19 @@ export default function ServicesPage() {
     );
   }
 
+  const handleRefreshLiveWeather = async () => {
+    try {
+      setFetchingWeather(true);
+      const data = await fetchLiveWeatherFromApi(searchQuery);
+      setWeatherData(data);
+      incrementWeatherQueries();
+    } catch (err) {
+      console.error("Error refreshing weather data:", err);
+    } finally {
+      setTimeout(() => setFetchingWeather(false), 500);
+    }
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!locationInput.trim()) return;
@@ -150,20 +170,35 @@ export default function ServicesPage() {
       <div className="absolute top-80 right-1/4 h-[350px] w-[350px] rounded-full bg-amber-400/10 blur-3xl -z-10 pointer-events-none" />
 
       {/* HERO SECTION */}
-      <section className="py-12 text-center px-6 max-w-7xl mx-auto">
-        <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight break-words">
-          Live Weather Services
-          <span className="block bg-gradient-to-r from-blue-600 to-amber-500 bg-clip-text text-transparent">
-            OpenWeatherMap Telemetry
+      <section className="pt-6 sm:pt-10 pb-2 text-center px-6 max-w-7xl mx-auto">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.15] break-words">
+          Live Weather{" "}
+          <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-amber-500 bg-clip-text text-transparent">
+            Services
           </span>
         </h1>
-        <p className="mt-4 max-w-2xl mx-auto text-sm md:text-base font-semibold text-gray-500 dark:text-gray-400">
+        <p className="mt-4 sm:mt-6 max-w-2xl mx-auto text-sm sm:text-base md:text-xl text-gray-600 dark:text-gray-400 font-light leading-relaxed">
           Real-time weather station metrics, air quality indices, wind vectors, and local 24-hour timelines.
         </p>
       </section>
 
-      {/* SEARCH BAR WITH AUTO-COMPLETE */}
-      <section className="py-4 px-6 flex justify-center relative z-45 max-w-7xl mx-auto">
+      {/* SEARCH BAR SECTION WITH REFRESH BUTTON ABOVE ON THE RIGHT */}
+      <section className="pt-1 pb-4 px-6 max-w-7xl mx-auto space-y-2 relative z-45">
+        {/* Refresh Button Row (Above Search Bar on Right Side) */}
+        <div className="flex justify-end items-center">
+          <button
+            type="button"
+            onClick={handleRefreshLiveWeather}
+            disabled={fetchingWeather}
+            className="px-3.5 py-1.5 rounded-full border border-gray-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+            title="Refresh live weather telemetry"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 text-blue-500 ${fetchingWeather ? "animate-spin" : ""}`} />
+            <span>Refresh Weather</span>
+          </button>
+        </div>
+
+        {/* SEARCH FORM */}
         <form
           onSubmit={handleSearch}
           className="w-full flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl p-3 shadow-lg relative"

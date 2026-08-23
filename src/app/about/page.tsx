@@ -1,136 +1,301 @@
+"use client";
+
+import { motion } from "framer-motion";
+import {
+  CloudSun,
+  ShieldCheck,
+  Zap,
+  Activity,
+  Database,
+  Cpu,
+  Layers,
+  Sparkles,
+  Users,
+  BarChart3,
+  Mail,
+  CheckCircle2,
+  Compass,
+} from "lucide-react";
+import Link from "next/link";
+
 export default function AboutPage() {
   return (
-    <section className="relative overflow-hidden">
-      {/* Background accents */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute -top-32 left-1/3 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
-        <div className="absolute top-80 right-16 h-80 w-80 rounded-full bg-amber-400/20 blur-3xl" />
+    <div className="pt-14 min-h-screen bg-white dark:bg-[#020617] text-slate-900 dark:text-white transition-colors relative overflow-x-hidden">
+      {/* Dynamic Ambient Background Glows */}
+      <div className="absolute inset-0 -z-10 pointer-events-none">
+        <div className="absolute top-6 left-1/4 h-72 sm:h-96 w-72 sm:w-96 rounded-full bg-blue-500/15 blur-3xl dark:bg-blue-600/10" />
+        <div className="absolute top-80 right-10 sm:right-20 h-72 sm:h-96 w-72 sm:w-96 rounded-full bg-amber-400/15 blur-3xl dark:bg-amber-500/10" />
+        <div className="absolute bottom-40 left-10 h-80 w-80 rounded-full bg-indigo-500/10 blur-3xl" />
       </div>
 
-      <div className="mx-auto max-w-5xl px-6 py-28">
-        {/* Heading */}
-        <div className="mb-20 text-center">
-          <span className="inline-block rounded-full bg-blue-100 dark:bg-blue-900/40 px-4 py-1 text-sm font-medium text-blue-700 dark:text-blue-300">
-            About IndraCast
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 pt-6 sm:pt-10 md:pt-12 pb-12 sm:pb-20 md:pb-24">
+        {/* HERO SECTION */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className="text-center mb-12 sm:mb-16"
+        >
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 dark:bg-blue-900/40 px-4 py-1.5 text-xs sm:text-sm font-bold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40 shadow-sm">
+            <Sparkles className="h-4 w-4 text-blue-500" />
+            About IndraCast Engine
           </span>
 
-          <h1 className="mt-6 text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
-            Built for clarity.
-            <span className="block bg-gradient-to-r from-blue-600 to-amber-500 bg-clip-text text-transparent">
-              Designed for India.
+          <h1 className="mt-6 text-3xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.15]">
+            Architected for Precision.
+            <span className="block bg-gradient-to-r from-blue-600 via-indigo-500 to-amber-500 bg-clip-text text-transparent">
+              Engineered for India.
             </span>
           </h1>
 
-          <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-600 dark:text-gray-400">
-            IndraCast is a modern, India-first weather dashboard focused on
-            accuracy, simplicity, and thoughtful design — built to make weather
-            information easy to consume and genuinely useful.
+          <p className="mt-6 max-w-3xl mx-auto text-sm sm:text-lg text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+            <strong>IndraCast</strong> — derived from <em>Indra</em> (the ancient deity of thunderbolts and atmospheric weather) — is a state-of-the-art meteorological platform delivering real-time telemetry, air quality metrics, interactive analytics, and secure administrative controls.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Content */}
-        <div className="space-y-20">
-          {/* Why */}
-          <section>
-            <h2 className="text-2xl font-bold mb-4">Why IndraCast?</h2>
-            <div className="space-y-4 text-gray-600 dark:text-gray-400 leading-relaxed">
-              <p>
-                Most weather applications today are cluttered with ads, packed
-                with unnecessary features, or lack regional focus. They often
-                overwhelm users instead of helping them make quick, informed
-                decisions.
-              </p>
-              <p>
-                IndraCast was created to fix that — by offering a clean,
-                distraction-free experience focused exclusively on Indian cities
-                and states, where weather patterns vary significantly across
-                regions.
-              </p>
-            </div>
-          </section>
+        {/* 4 HIGHLIGHT TILES */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-20"
+        >
+          <HighlightCard
+            icon={<Zap className="h-6 w-6 text-amber-500" />}
+            title="Real-Time Telemetry"
+            description="Live station data, UV index, wind vectors, and 24-hour timelines."
+          />
+          <HighlightCard
+            icon={<ShieldCheck className="h-6 w-6 text-blue-500" />}
+            title="Edge JWT Security"
+            description="Tokenized session cookies and Next.js Edge Middleware route guards."
+          />
+          <HighlightCard
+            icon={<BarChart3 className="h-6 w-6 text-emerald-500" />}
+            title="Admin Analytics"
+            description="Interactive SVG curves for temperature, humidity, AQI, & query volume."
+          />
+          <HighlightCard
+            icon={<Users className="h-6 w-6 text-indigo-500" />}
+            title="Role Management"
+            description="Firestore user directory with live pagination and admin role promotion."
+          />
+        </motion.div>
 
-          {/* What */}
-          <section>
-            <h2 className="text-2xl font-bold mb-4">
-              What Does IndraCast Provide?
+        {/* CORE PLATFORM CAPABILITIES */}
+        <section className="mb-20 space-y-12">
+          <div className="text-center max-w-2xl mx-auto">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
+              Platform Features & Architecture
             </h2>
-
-            <ul className="space-y-3 list-disc list-inside text-gray-600 dark:text-gray-400">
-              <li>
-                Real-time weather conditions for cities and states across India
-              </li>
-              <li>
-                A minimal dashboard layout designed for fast readability
-              </li>
-              <li>
-                Light and dark modes for comfortable viewing in any environment
-              </li>
-              <li>
-                Storage of user account profiles and search metrics in Firebase
-              </li>
-            </ul>
-          </section>
-
-          {/* Tech Stack */}
-          <section>
-            <h2 className="text-2xl font-bold mb-4">Technology Stack</h2>
-            <p className="text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
-              IndraCast is built using a carefully selected technology stack that
-              balances performance, scalability, and developer experience.
-            </p>
-
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-black p-6">
-                <h3 className="font-semibold mb-2">Next.js</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Powers frontend rendering and edge middleware routing for secure access control.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-black p-6">
-                <h3 className="font-semibold mb-2">Firebase (Auth & Firestore)</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Secures user authentication, role-based administration, system configuration, and live database persistence.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-black p-6">
-                <h3 className="font-semibold mb-2">WeatherAPI.com</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Delivers live station telemetry, air quality metrics, and 24-hour hourly series forecasts for Indian cities.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-black p-6">
-                <h3 className="font-semibold mb-2">Tailwind CSS</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Enables a consistent design system with rapid styling and seamless dark mode support.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* Vision */}
-          <section>
-            <h2 className="text-2xl font-bold mb-4">Vision</h2>
-            <p className="text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
-              IndraCast is designed as a foundation rather than a finished idea.
-              While the current focus is on clarity and reliability, the long-term
-              vision includes deeper insights, historical trends, forecasts, and
-              intelligent analytics — all without compromising simplicity.
-            </p>
-          </section>
-
-          {/* Footer Note */}
-          <div className="pt-12 border-t border-gray-200 dark:border-gray-800 text-center">
-            <p className="text-sm text-gray-500">
-              Built with care using Next.js, Firebase, and WeatherAPI.com.
-              <br />
-              Designed for everyday users across India.
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-2">
+              Designed from the ground up to offer an uncompromised user experience.
             </p>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <FeatureBox
+              icon={<CloudSun className="h-6 w-6 text-amber-500" />}
+              title="Live Weather Services"
+              items={[
+                "Geocoded city search with autocomplete suggestions",
+                "24-hour local hourly forecast timeline",
+                "3-day extended meteorological outlook",
+                "Air Quality Index (PM2.5) & UV index telemetry",
+              ]}
+            />
+
+            <FeatureBox
+              icon={<ShieldCheck className="h-6 w-6 text-blue-500" />}
+              title="Authentication & Security"
+              items={[
+                "Firebase Auth with JWT session tokenization",
+                "Edge Middleware route protection (/services, /admin)",
+                "Preserved redirect URL flows across login/signup",
+                "Secure Gmail SMTP contact form processing",
+              ]}
+            />
+
+            <FeatureBox
+              icon={<Activity className="h-6 w-6 text-emerald-500" />}
+              title="Admin & Telemetry Portal"
+              items={[
+                "Interactive SVG analytics chart with metric toggles",
+                "Paginated active users directory with role controls",
+                "System configuration switches (Maintenance mode, °C/°F)",
+                "Broadcast weather alert announcement banner system",
+              ]}
+            />
+          </div>
+        </section>
+
+        {/* TECH STACK GRID */}
+        <section className="mb-20">
+          <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-6 sm:p-10 backdrop-blur-xl shadow-xl space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Layers className="h-7 w-7 text-blue-500" /> Technical Architecture Stack
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
+                  Built using production-grade modern Web technologies.
+                </p>
+              </div>
+
+              <span className="px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold self-start sm:self-auto">
+                Next.js 16 App Router
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <TechStackCard
+                title="Next.js 16"
+                category="Frontend & Edge Routing"
+                description="App Router, Server Components, and Edge Middleware session evaluation."
+                icon={<Cpu className="h-5 w-5 text-blue-500" />}
+              />
+              <TechStackCard
+                title="Firebase Suite"
+                category="Auth & Database"
+                description="Firebase Auth with Firestore Realtime NoSQL for persistent state."
+                icon={<Database className="h-5 w-5 text-amber-500" />}
+              />
+              <TechStackCard
+                title="Weather Telemetry"
+                category="API Integration"
+                description="OpenWeatherMap & WeatherAPI.com high-precision meteorological telemetry."
+                icon={<Compass className="h-5 w-5 text-emerald-500" />}
+              />
+              <TechStackCard
+                title="Tailwind CSS 4"
+                category="Styling & Motion"
+                description="Glassmorphism UI, Framer Motion micro-animations, & adaptive dark mode."
+                icon={<Sparkles className="h-5 w-5 text-indigo-500" />}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* LEAD DEVELOPER & PROJECT CONTACT */}
+        <section className="mb-16">
+          <div className="rounded-3xl border border-blue-500/20 bg-gradient-to-r from-blue-500/10 via-indigo-500/5 to-amber-500/10 p-6 sm:p-10 backdrop-blur-xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="space-y-3 text-center md:text-left">
+              <span className="text-xs font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">
+                Lead Project Engineer
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+                Pranav Gadewar
+              </h3>
+              <p className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 max-w-xl">
+                Created IndraCast with a focus on high-precision weather insights, beautiful UI responsiveness, robust JWT tokenization, and seamless regional coverage for India.
+              </p>
+              <div className="pt-2 flex items-center justify-center md:justify-start gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
+                <Mail className="h-4 w-4 text-amber-500" />
+                <span>pranav.gadewar.dev@gmail.com</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full sm:w-auto">
+              <Link
+                href="/services"
+                className="w-full sm:w-auto text-center rounded-2xl bg-blue-600 px-6 py-3 text-xs font-extrabold text-white hover:bg-blue-700 transition active:scale-95 shadow-lg shadow-blue-500/20"
+              >
+                Explore Weather Services
+              </Link>
+              <Link
+                href="/contact"
+                className="w-full sm:w-auto text-center rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 px-6 py-3 text-xs font-extrabold text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition active:scale-95 shadow-sm"
+              >
+                Contact Developer
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* FOOTER NOTE */}
+        <div className="pt-8 border-t border-slate-200 dark:border-slate-800 text-center text-xs font-semibold text-slate-500">
+          IndraCast Weather System • Engineered with Next.js, Firebase & WeatherAPI.com • Designed for everyday users across India.
         </div>
       </div>
-    </section>
+    </div>
+  );
+}
+
+function HighlightCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 p-5 shadow-sm hover:border-blue-500/30 transition-all duration-200 space-y-3">
+      <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-fit">
+        {icon}
+      </div>
+      <h3 className="text-base font-bold text-slate-900 dark:text-white">{title}</h3>
+      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+        {description}
+      </p>
+    </div>
+  );
+}
+
+function FeatureBox({
+  icon,
+  title,
+  items,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  items: string[];
+}) {
+  return (
+    <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-6 backdrop-blur-xl shadow-lg space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          {icon}
+        </div>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
+      </div>
+      <ul className="space-y-2.5 pt-2">
+        {items.map((item, idx) => (
+          <li key={idx} className="flex items-start gap-2 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300">
+            <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function TechStackCard({
+  title,
+  category,
+  description,
+  icon,
+}: {
+  title: string;
+  category: string;
+  description: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 p-5 space-y-2 hover:border-blue-500/30 transition-colors">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+          {category}
+        </span>
+        {icon}
+      </div>
+      <h4 className="text-base font-extrabold text-slate-900 dark:text-white">{title}</h4>
+      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+        {description}
+      </p>
+    </div>
   );
 }

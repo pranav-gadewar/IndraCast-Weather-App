@@ -29,21 +29,42 @@ export default function ContactPage() {
       setLoading(true);
       setError("");
 
-      await addDoc(collection(db, "messages"), {
-        name: form.name.trim(),
-        email: form.email.trim(),
-        message: form.message.trim(),
-        createdAt: serverTimestamp(),
+      // 1️⃣ Send email via SMTP API endpoint
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          message: form.message.trim(),
+        }),
       });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to transmit message.");
+      }
+
+      // 2️⃣ Record message in Firestore database
+      try {
+        await addDoc(collection(db, "messages"), {
+          name: form.name.trim(),
+          email: form.email.trim(),
+          message: form.message.trim(),
+          createdAt: serverTimestamp(),
+        });
+      } catch (dbErr) {
+        console.warn("Firestore message save skipped:", dbErr);
+      }
 
       setSubmitted(true);
       setForm({ name: "", email: "", message: "" });
       setTimeout(() => setSubmitted(false), 5000);
     } catch (err: unknown) {
-      console.error("Error sending message:", err);
-      setSubmitted(true);
-      setForm({ name: "", email: "", message: "" });
-      setTimeout(() => setSubmitted(false), 5000);
+      const errorObj = err as { message?: string };
+      console.error("Error submitting contact form:", err);
+      setError(errorObj.message || "Failed to transmit message. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -109,7 +130,7 @@ export default function ContactPage() {
                 <div className="overflow-hidden">
                   <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Email Address</p>
                   <p className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white truncate">
-                    contact@indracast.app
+                    pranav.gadewar.dev@gmail.com
                   </p>
                 </div>
               </div>

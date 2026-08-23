@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { Mail, Lock, ArrowRight, ShieldCheck, AlertTriangle } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { auth, db } from "@/lib/firebase";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
@@ -14,9 +14,11 @@ import { setAuthCookies, clearAuthCookies } from "@/lib/cookieUtils";
 import { getSystemSettings } from "@/lib/systemSettings";
 import { usePreloader } from "@/context/PreloaderContext";
 
-export default function LoginPage() {
+function LoginContent() {
   const { resolvedTheme } = useTheme();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect");
   const { triggerPreloader } = usePreloader();
 
   const [mounted, setMounted] = useState(false);
@@ -78,9 +80,11 @@ export default function LoginPage() {
       // Trigger successful login preloader
       await triggerPreloader("login", 2000);
 
-      // 5️⃣ Role-based redirect: Admin → /admin/dashboard, Normal User → /
+      // 5️⃣ Role-based & Query-based redirect
       if (role === "admin") {
         router.push("/admin/dashboard");
+      } else if (redirectUrl && redirectUrl.startsWith("/")) {
+        router.push(redirectUrl);
       } else {
         router.push("/");
       }
@@ -176,7 +180,7 @@ export default function LoginPage() {
 
               <div className="flex justify-end pt-1">
                 <Link
-                  href="/auth/forgot-password"
+                  href={redirectUrl ? `/auth/forgot-password?redirect=${encodeURIComponent(redirectUrl)}` : "/auth/forgot-password"}
                   className="text-xs font-bold text-blue-600 hover:underline"
                 >
                   Forgot Password?
@@ -204,7 +208,7 @@ export default function LoginPage() {
           <div className="pt-6 border-t border-slate-200 dark:border-zinc-800 text-center text-xs font-semibold text-slate-500">
             New to IndraCast?{" "}
             <Link
-              href="/auth/signup"
+              href={redirectUrl ? `/auth/signup?redirect=${encodeURIComponent(redirectUrl)}` : "/auth/signup"}
               className="text-blue-600 font-bold hover:underline"
             >
               Create an account
@@ -227,5 +231,19 @@ export default function LoginPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="pt-20 min-h-screen flex items-center justify-center bg-white dark:bg-black">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Mail, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/lib/firebase";
 import { sendPasswordResetEmail } from "firebase/auth";
+import { useSearchParams } from "next/navigation";
 
-export default function ForgotPasswordPage() {
+function ForgotPasswordContent() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect");
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +24,7 @@ export default function ForgotPasswordPage() {
 
       await sendPasswordResetEmail(auth, email);
 
-      setMessage("Password reset link sent! Check your email.");
+      setMessage("Password reset link sent! Check your email inbox.");
     } catch (err: unknown) {
       const errorObj = err as { message?: string };
       setError(errorObj.message || "Failed to send reset email.");
@@ -83,7 +86,7 @@ export default function ForgotPasswordPage() {
 
         <div className="text-center pt-4 border-t border-slate-200 dark:border-slate-800/80">
           <Link
-            href="/auth/login"
+            href={redirectUrl ? `/auth/login?redirect=${encodeURIComponent(redirectUrl)}` : "/auth/login"}
             className="inline-flex items-center gap-2 text-xs font-bold text-blue-600 hover:underline"
           >
             <ArrowLeft size={14} />
@@ -92,5 +95,19 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="pt-20 min-h-screen flex items-center justify-center bg-white dark:bg-black">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        </div>
+      }
+    >
+      <ForgotPasswordContent />
+    </Suspense>
   );
 }

@@ -73,7 +73,7 @@ export default function QuickView() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.1 }}
-          className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-hero tracking-tight mb-6 sm:mb-8 bg-gradient-to-b from-gray-900 via-gray-700 to-gray-500 dark:from-white dark:via-white/90 dark:to-white/40 bg-clip-text text-transparent leading-[1.15]"
+          className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-6 sm:mb-8 bg-gradient-to-b from-gray-900 via-gray-700 to-gray-500 dark:from-white dark:via-white/90 dark:to-white/40 bg-clip-text text-transparent leading-[1.15]"
         >
           The world&apos;s sky, <br className="hidden sm:inline" /> in your palm.
         </motion.h1>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -18,7 +18,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { auth, db } from "@/lib/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
@@ -26,9 +26,11 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { setAuthCookies } from "@/lib/cookieUtils";
 import { getSystemSettings } from "@/lib/systemSettings";
 
-export default function SignupPage() {
+function SignupContent() {
   const { resolvedTheme } = useTheme();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect");
 
   const [mounted, setMounted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -109,8 +111,12 @@ export default function SignupPage() {
       // 3️⃣ Set Auth cookies
       setAuthCookies(idToken, "user");
 
-      // 4️⃣ Redirect to landing page logged in
-      router.push("/");
+      // 4️⃣ Redirect post-signup
+      if (redirectUrl && redirectUrl.startsWith("/")) {
+        router.push(redirectUrl);
+      } else {
+        router.push("/");
+      }
     } catch (err: unknown) {
       const errorObj = err as { code?: string; message?: string };
       if (errorObj.message === "REGISTRATION_PAUSED") {
@@ -309,7 +315,7 @@ export default function SignupPage() {
             <div className="text-center pt-8 border-t border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-500">
               Already have an account?{" "}
               <Link
-                href="/auth/login"
+                href={redirectUrl ? `/auth/login?redirect=${encodeURIComponent(redirectUrl)}` : "/auth/login"}
                 className="text-blue-600 font-bold hover:underline"
               >
                 Sign in
@@ -360,5 +366,19 @@ function Field({
         {children}
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="pt-20 min-h-screen flex items-center justify-center bg-white dark:bg-black">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        </div>
+      }
+    >
+      <SignupContent />
+    </Suspense>
   );
 }

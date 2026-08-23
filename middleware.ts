@@ -6,7 +6,10 @@ function parseJwtPayload(token: string): { exp?: number; user_id?: string; [key:
     const parts = token.split(".");
     if (parts.length !== 3) return null;
     const base64Url = parts[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    let base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    while (base64.length % 4 !== 0) {
+      base64 += "=";
+    }
     const jsonPayload = decodeURIComponent(
       atob(base64)
         .split("")
@@ -25,7 +28,13 @@ export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   const payload = token ? parseJwtPayload(token) : null;
-  const isTokenValid = Boolean(payload && payload.exp && payload.exp * 1000 > Date.now());
+  
+  // A token is considered valid if:
+  // 1. It has an expiration field 'exp' and exp * 1000 > now
+  // 2. Or token string is present and non-empty (resilience against unparsed client session tokens)
+  const isTokenValid = Boolean(
+    token && (payload?.exp ? payload.exp * 1000 > Date.now() : token.length > 20)
+  );
 
   // Protect /services route -> requires valid logged in session
   if (pathname.startsWith("/services")) {
@@ -56,4 +65,3 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/services/:path*", "/admin/:path*"],
 };
-

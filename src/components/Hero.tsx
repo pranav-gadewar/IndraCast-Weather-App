@@ -54,7 +54,7 @@ export default function Hero() {
 
             <motion.h1
               variants={itemVariants}
-              className="mt-5 sm:mt-6 text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-hero tracking-tight text-black dark:text-white leading-[1.12]"
+              className="mt-5 sm:mt-6 text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.15]"
             >
               Weather that moves
               <span className="block bg-gradient-to-r from-blue-600 via-indigo-500 to-amber-500 bg-clip-text text-transparent">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, Search, UserCheck, Trash2, ShieldCheck, RefreshCw } from "lucide-react";
+import { Users, Search, UserCheck, Trash2, ShieldCheck, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
@@ -26,6 +26,10 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
+
+  // 📄 Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(6);
 
   const fetchUsers = async () => {
     try {
@@ -60,6 +64,11 @@ export default function AdminUsersPage() {
 
     return () => unsub();
   }, []);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    setCurrentPage(1);
+  };
 
   const handleRefreshUsers = async () => {
     setRefreshing(true);
@@ -101,6 +110,13 @@ export default function AdminUsersPage() {
     );
   });
 
+  // Calculate Pagination slice
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage) || 1;
+  const validCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (validCurrentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, filteredUsers.length);
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -132,7 +148,7 @@ export default function AdminUsersPage() {
               type="text"
               placeholder="Search by name, email, city..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={handleSearchChange}
               className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
@@ -167,58 +183,123 @@ export default function AdminUsersPage() {
               : "No matching regular users found."}
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-            <table className="w-full text-left text-xs md:text-sm text-slate-700 dark:text-slate-300">
-              <thead className="bg-slate-100 dark:bg-slate-800/80 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 sticky top-0 backdrop-blur">
-                <tr>
-                  <th className="px-4 py-3">Full Name</th>
-                  <th className="px-4 py-3">Email Address</th>
-                  <th className="px-4 py-3">Location</th>
-                  <th className="px-4 py-3">Phone</th>
-                  <th className="px-4 py-3">Role</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
-                {filteredUsers.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                    <td className="px-4 py-3.5 font-bold text-slate-900 dark:text-white">
-                      {u.name || "N/A"}
-                    </td>
-                    <td className="px-4 py-3.5 text-slate-600 dark:text-slate-400">
-                      {u.email || "N/A"}
-                    </td>
-                    <td className="px-4 py-3.5 text-slate-600 dark:text-slate-400">
-                      {u.city ? `${u.city}${u.state ? `, ${u.state}` : ""}` : "India"}
-                    </td>
-                    <td className="px-4 py-3.5 text-slate-600 dark:text-slate-400">
-                      {u.phone || "—"}
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span className="inline-block text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30">
-                        {u.role || "USER"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-right space-x-2">
-                      <button
-                        onClick={() => handleToggleRole(u.id, u.role || "user")}
-                        className="px-2.5 py-1 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold hover:bg-amber-500/20 transition-colors"
-                        title="Promote User to Admin"
-                      >
-                        Make Admin
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(u.id, u.name || "User")}
-                        className="p-1.5 rounded-lg border border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors inline-flex items-center"
-                        title="Delete User Record"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </td>
+          <div className="space-y-4">
+            <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+              <table className="w-full text-left text-xs md:text-sm text-slate-700 dark:text-slate-300">
+                <thead className="bg-slate-100 dark:bg-slate-800/80 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 sticky top-0 backdrop-blur">
+                  <tr>
+                    <th className="px-4 py-3">Full Name</th>
+                    <th className="px-4 py-3">Email Address</th>
+                    <th className="px-4 py-3">Location</th>
+                    <th className="px-4 py-3">Phone</th>
+                    <th className="px-4 py-3">Role</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
+                  {paginatedUsers.map((u) => (
+                    <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <td className="px-4 py-3.5 font-bold text-slate-900 dark:text-white">
+                        {u.name || "N/A"}
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-600 dark:text-slate-400">
+                        {u.email || "N/A"}
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-600 dark:text-slate-400">
+                        {u.city ? `${u.city}${u.state ? `, ${u.state}` : ""}` : "India"}
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-600 dark:text-slate-400">
+                        {u.phone || "—"}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span className="inline-block text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30">
+                          {u.role || "USER"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-right space-x-2">
+                        <button
+                          onClick={() => handleToggleRole(u.id, u.role || "user")}
+                          className="px-2.5 py-1 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold hover:bg-amber-500/20 transition-colors"
+                          title="Promote User to Admin"
+                        >
+                          Make Admin
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(u.id, u.name || "User")}
+                          className="p-1.5 rounded-lg border border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors inline-flex items-center"
+                          title="Delete User Record"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* 📄 PAGINATION CONTROLS BAR */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+              <div className="flex items-center gap-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <span>
+                  Showing <strong className="text-slate-900 dark:text-white">{filteredUsers.length === 0 ? 0 : startIndex + 1}</strong> to{" "}
+                  <strong className="text-slate-900 dark:text-white">{endIndex}</strong> of{" "}
+                  <strong className="text-slate-900 dark:text-white">{filteredUsers.length}</strong> entries
+                </span>
+
+                <div className="flex items-center gap-1.5 ml-2">
+                  <span>Per page:</span>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold outline-none focus:ring-1 focus:ring-amber-500"
+                  >
+                    <option value={5}>5</option>
+                    <option value={6}>6</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Page Buttons */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={validCurrentPage === 1}
+                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 disabled:opacity-40 transition-colors"
+                  title="Previous Page"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                      validCurrentPage === page
+                        ? "bg-amber-500 text-slate-950 shadow-sm"
+                        : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    {page}
+                  </button>
                 ))}
-              </tbody>
-            </table>
+
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                  disabled={validCurrentPage === totalPages}
+                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 disabled:opacity-40 transition-colors"
+                  title="Next Page"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
