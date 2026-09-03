@@ -23,7 +23,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { setAuthCookies } from "@/lib/cookieUtils";
 import { getSystemSettings } from "@/lib/systemSettings";
 
 function SignupContent() {
@@ -84,20 +83,23 @@ function SignupContent() {
         throw new Error("Please fill in all required fields (Name, Email, Password).");
       }
 
+      const normalizedEmail = form.email.toLowerCase().trim();
+
       // 1️⃣ Create Firebase auth user
       const userCred = await createUserWithEmailAndPassword(
         auth,
-        form.email,
+        normalizedEmail,
         form.password
       );
 
       const user = userCred.user;
       const idToken = await user.getIdToken();
 
-      // 2️⃣ Store user metadata in Firestore
+      // 2️⃣ Store user metadata in Firestore. Email is normalized here so
+      // every later passcode lookup (which also normalizes) reliably matches.
       await setDoc(doc(db, "users", user.uid), {
         name: form.name,
-        email: form.email,
+        email: normalizedEmail,
         phone: form.phone || "",
         gender: form.gender || "",
         age: form.age || "",
@@ -108,15 +110,15 @@ function SignupContent() {
         createdAt: serverTimestamp(),
       });
 
-      // 3️⃣ Set Auth cookies
-      setAuthCookies(idToken, "user");
+      // 3️⃣ Establish the app's own signed session
+      await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
 
-      // 4️⃣ Redirect post-signup
-      if (redirectUrl && redirectUrl.startsWith("/")) {
-        router.push(redirectUrl);
-      } else {
-        router.push("/");
-      }
+      // 4️⃣ Redirect post-signup to mandatory passcode setup
+      router.push(redirectUrl ? `/auth/setup-passcode?redirect=${encodeURIComponent(redirectUrl)}` : "/auth/setup-passcode");
     } catch (err: unknown) {
       const errorObj = err as { code?: string; message?: string };
       if (errorObj.message === "REGISTRATION_PAUSED") {

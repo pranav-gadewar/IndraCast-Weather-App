@@ -12,14 +12,15 @@ import {
   ChevronDown,
   LogOut,
   Shield,
+  KeyRound,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
-import { auth, db } from "@/lib/firebase";
-import { onAuthStateChanged, signOut, User as FirebaseUser } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { setAuthCookies, clearAuthCookies } from "@/lib/cookieUtils";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
+import { clearAuthCookies } from "@/lib/cookieUtils";
 import { usePreloader } from "@/context/PreloaderContext";
+import { useSession } from "@/hooks/useSession";
 
 export default function Navbar() {
   // 1️⃣ ALL Hooks declared unconditionally at the top level
@@ -38,8 +39,11 @@ export default function Navbar() {
     setMenuOpen(false);
   }
 
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [userData, setUserData] = useState<{ name?: string; email?: string; role?: string } | null>(null);
+  // Session state comes from our own signed session cookie (works for both
+  // password- and passcode-authenticated users), not Firebase's client auth
+  // state alone. Re-checked on every route change so a fresh login is
+  // picked up immediately after the post-login redirect.
+  const { session, refresh } = useSession();
 
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -48,35 +52,9 @@ export default function Navbar() {
     return () => clearTimeout(timer);
   }, []);
 
-  /* 🔥 Listen Firebase Auth State & Sync Cookies */
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (!firebaseUser) {
-        setUser(null);
-        setUserData(null);
-        clearAuthCookies();
-        return;
-      }
-
-      setUser(firebaseUser);
-
-      try {
-        const docSnap = await getDoc(doc(db, "users", firebaseUser.uid));
-        let role = "user";
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setUserData(data);
-          role = data.role || "user";
-        }
-        const token = await firebaseUser.getIdToken();
-        setAuthCookies(token, role);
-      } catch (err) {
-        console.error("Error fetching user metadata:", err);
-      }
-    });
-
-    return () => unsub();
-  }, []);
+    refresh();
+  }, [pathname, refresh]);
 
   /* CLOSE PROFILE DROPDOWN ON OUTSIDE CLICK */
   useEffect(() => {
@@ -103,10 +81,13 @@ export default function Navbar() {
   const handleLogout = async () => {
     setProfileOpen(false);
     await triggerPreloader("logout", 2000);
-    await signOut(auth);
-    clearAuthCookies();
-    setUser(null);
-    setUserData(null);
+    try {
+      await signOut(auth);
+    } catch {
+      // No-op: users who authenticated via passcode never had a Firebase
+      // client session to sign out of in the first place.
+    }
+    await clearAuthCookies();
     router.push("/auth/login");
   };
 
@@ -156,7 +137,7 @@ export default function Navbar() {
             </button>
 
             {/* 🔥 If NOT logged in → show Login */}
-            {!user && (
+            {!session && (
               <Link
                 href="/auth/login"
                 className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
@@ -166,7 +147,7 @@ export default function Navbar() {
             )}
 
             {/* 🔥 Logged-in Profile */}
-            {user && (
+            {session && (
               <div ref={profileRef} className="relative">
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
@@ -177,7 +158,7 @@ export default function Navbar() {
                   </div>
 
                   <span className="text-sm font-semibold hidden sm:block max-w-[120px] truncate">
-                    {userData?.name || "User"}
+                    {session.name || "User"}
                   </span>
 
                   <ChevronDown
@@ -191,12 +172,12 @@ export default function Navbar() {
                   <div className="absolute right-0 mt-3 w-56 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 shadow-2xl overflow-hidden z-50">
                     <div className="p-3.5 border-b border-gray-100 dark:border-white/10 text-sm bg-gray-50/50 dark:bg-white/5">
                       <p className="font-bold text-gray-900 dark:text-white truncate">
-                        {userData?.name || "User"}
+                        {session.name || "User"}
                       </p>
                       <p className="text-gray-500 text-xs truncate">
-                        {userData?.email || user.email}
+                        {session.email}
                       </p>
-                      {userData?.role === "admin" && (
+                      {session.role === "admin" && (
                         <span className="mt-1.5 inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                           Admin
                         </span>
@@ -216,8 +197,15 @@ export default function Navbar() {
                         Settings
                       </DropdownLink> */}
 
+                      <DropdownLink
+                        href="/auth/setup-passcode"
+                        icon={<KeyRound className="h-4 w-4 text-blue-500" />}
+                      >
+                        Change Passcode
+                      </DropdownLink>
+
                       {/* Admin dashboard option visible ONLY to admins */}
-                      {userData?.role === "admin" && (
+                      {session.role === "admin" && (
                         <DropdownLink
                           href="/admin/dashboard"
                           icon={<Shield className="h-4 w-4 text-amber-500" />}

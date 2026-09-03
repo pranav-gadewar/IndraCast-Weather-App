@@ -1,0 +1,83 @@
+rules_version = '2';
+
+// Deploy via Firebase Console -> Firestore Database -> Rules -> paste -> Publish,
+// or `firebase deploy --only firestore:rules` if you use the CLI.
+//
+// This replaces the previously deployed rules, which were:
+//   match /users/{userId} {
+//     allow read: if true;                    // <- anyone, no auth required
+//     allow write: if request.auth != null;   // <- ANY signed-in caller could
+//   }                                            overwrite ANY user's role,
+//                                                 passcode hash, or PII.
+//
+// Known, deliberate remaining trade-off: passcode login (email + 6-digit
+// code, no prior Firebase session) needs to look a user up by email before
+// it can prove who they are, and Firestore rules can't scope a query to
+// "only my own server code" without a privileged service-account key
+// (firebase-admin), which this project does not have configured. The
+// `isSignedIn()` read below is the narrowest workable substitute: it still
+// blocks fully anonymous, tokenless scraping of the collection, while
+// letting the app's short-lived anonymous bootstrap token (see
+// src/lib/firestoreRest.ts) perform that one lookup. Closing this
+// completely requires either firebase-admin custom-token minting, or moving
+// the email->passcode-hash lookup into its own minimal, non-PII collection
+// (e.g. `passcodeIndex/{email}` containing only { uid, passcodeHash,
+// passcodeConfigured, failedPasscodeAttempts }) that can safely be world-
+// readable because it carries no personal data. Recommended as a follow-up.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /users/{userId} {
+      // See trade-off note above.
+      allow read: if isSignedIn();
+
+      allow create: if isOwner(userId);
+
+      // Owners and admins may update any field on a record. Any signed-in
+      // caller (including the anonymous passcode-verify bootstrap token)
+      // may ONLY touch the failed-attempt counter — never role, passcodeHash
+      // or any PII field.
+      allow update: if isOwner(userId) || isAdmin() ||
+        (isSignedIn() &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['failedPasscodeAttempts']));
+
+      allow delete: if isAdmin();
+    }
+
+    // Public system flags (maintenance mode, registration toggle, etc.)
+    // read by the login/signup pages before any session exists.
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Simple query-count counter, incremented from the (already
+    // session-gated) /services page.
+    match /analytics/{docId} {
+      allow read: if isAdmin();
+      allow write: if isSignedIn();
+    }
+
+    // Contact form submissions (if still written directly to Firestore
+    // anywhere instead of only via /api/contact's email path).
+    match /messages/{docId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}

@@ -12,10 +12,8 @@ import {
   X,
 } from "lucide-react";
 
-import { auth, db } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import AdminHeader from "@/components/admin/AdminHeader";
+import { useSession } from "@/hooks/useSession";
 
 export default function AdminLayout({
   children,
@@ -24,8 +22,6 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [loading, setLoading] = useState(true);
-  const [adminUser, setAdminUser] = useState<Record<string, unknown> | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [prevPath, setPrevPath] = useState(pathname);
 
@@ -34,31 +30,29 @@ export default function AdminLayout({
     setSidebarOpen(false);
   }
 
+  // Gate on the app's own signed session (works for both password- and
+  // passcode-authenticated admins) rather than Firebase's client auth state
+  // alone, which a passcode login never establishes.
+  const { session, loading: sessionLoading } = useSession();
+
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        router.replace("/auth/login?redirect=/admin/dashboard");
-        return;
-      }
+    if (sessionLoading) return;
 
-      try {
-        const docSnap = await getDoc(doc(db, "users", user.uid));
-        if (docSnap.exists() && docSnap.data().role === "admin") {
-          setAdminUser({ uid: user.uid, ...docSnap.data() });
-          setLoading(false);
-        } else {
-          router.replace("/");
-        }
-      } catch (err) {
-        console.error("Admin verification error:", err);
-        router.replace("/");
-      }
-    });
+    if (!session) {
+      router.replace("/auth/login?redirect=/admin/dashboard");
+      return;
+    }
 
-    return () => unsub();
-  }, [router]);
+    if (session.role !== "admin") {
+      router.replace("/");
+    }
+  }, [session, sessionLoading, router]);
 
-  if (loading) {
+  const adminUser = session
+    ? { uid: session.uid, name: session.name, email: session.email, role: session.role }
+    : null;
+
+  if (sessionLoading || !session || session.role !== "admin") {
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-950 text-white">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-amber-500 border-t-transparent mb-4" />

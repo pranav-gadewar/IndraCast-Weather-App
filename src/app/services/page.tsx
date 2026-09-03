@@ -17,9 +17,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { auth } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { setAuthCookies } from "@/lib/cookieUtils";
+import { useSession } from "@/hooks/useSession";
 
 import { incrementWeatherQueries } from "@/lib/analytics";
 import {
@@ -37,28 +35,19 @@ export default function ServicesPage() {
   const suggestionRef = useRef<HTMLDivElement>(null);
 
   const [weatherData, setWeatherData] = useState<WeatherApiResult | null>(null);
-  const [loading, setLoading] = useState(true);
   const [fetchingWeather, setFetchingWeather] = useState(false);
   const router = useRouter();
 
-  /* 🔐 Auth Protection */
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        router.replace("/auth/login?redirect=/services");
-      } else {
-        try {
-          const token = await user.getIdToken();
-          setAuthCookies(token, "user");
-        } catch (err) {
-          console.warn("Could not sync cookies on services page mount:", err);
-        }
-        setLoading(false);
-      }
-    });
+  /* 🔐 Auth Protection — relies on the same signed session cookie the edge
+     middleware already checked, so this works for both password- and
+     passcode-authenticated users. */
+  const { session, loading } = useSession();
 
-    return () => unsub();
-  }, [router]);
+  useEffect(() => {
+    if (!loading && !session) {
+      router.replace("/auth/login?redirect=/services");
+    }
+  }, [loading, session, router]);
 
   /* Geolocation auto-detection on mount */
   useEffect(() => {
