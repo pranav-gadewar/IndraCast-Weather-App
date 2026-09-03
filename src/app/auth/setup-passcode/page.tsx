@@ -129,17 +129,17 @@ function PasscodeSetupContent() {
       setSubmitting(true);
       setError("");
 
-      const token = await user.getIdToken();
+      const token = user ? await user.getIdToken().catch(() => "") : "";
       const res = await fetch("/api/auth/passcode", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           action: "setup",
-          uid: user.uid,
-          email: user.email,
+          uid: user?.uid || "",
+          email: user?.email || "",
           newPasscode: p1,
           idToken: token,
           role: userRole,

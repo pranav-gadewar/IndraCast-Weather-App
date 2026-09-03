@@ -8,9 +8,6 @@ import { Mail, Lock, ArrowRight, ShieldCheck, AlertTriangle, KeyRound, Key } fro
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { auth, db } from "@/lib/firebase";
-import { signInWithEmailAndPassword, signInWithCustomToken, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { clearAuthCookies } from "@/lib/cookieUtils";
 import { getSystemSettings } from "@/lib/systemSettings";
 import { usePreloader } from "@/context/PreloaderContext";
@@ -32,7 +29,7 @@ function LoginContent() {
 
   // Attempt counters
   const [passcodeAttempts, setPasscodeAttempts] = useState(0);
-  const [passwordAttempts, setPasswordAttempts] = useState(0);
+  const [, setPasswordAttempts] = useState(0);
 
   // Set when the user explicitly asked to reset a forgotten passcode, so a
   // successful password sign-in routes to passcode setup even though this
@@ -137,17 +134,7 @@ function LoginContent() {
         throw new Error("MAINTENANCE_MODE");
       }
 
-      // Passcode login has no password to sign into Firebase with, so the
-      // server minted a custom token instead — exchange it for a real
-      // Firebase Auth session (this is what lets client-side Firestore
-      // reads, e.g. on the admin panel, work the same as a password login).
-      if (data.customToken) {
-        try {
-          await signInWithCustomToken(auth, data.customToken);
-        } catch (fbErr) {
-          console.warn("Could not establish Firebase session from custom token:", fbErr);
-        }
-      }
+
 
       // Sign-in successful via passcode -> trigger preloader & redirect
       await triggerPreloader("login", 2000);
@@ -182,53 +169,51 @@ function LoginContent() {
       setLoading(true);
       setError("");
 
-      // 1️⃣ Firebase Auth password sign in
-      const userCred = await signInWithEmailAndPassword(auth, email.trim(), password);
-      const user = userCred.user;
-      const idToken = await user.getIdToken();
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+        }),
+      });
 
-      // 2️⃣ Check Firestore user record for role & passcode configuration status
-      let role = "user";
-      let passcodeConfigured = false;
-
-      const docSnap = await getDoc(doc(db, "users", user.uid));
-      if (docSnap.exists()) {
-        const userData = docSnap.data();
-        role = userData.role || "user";
-        passcodeConfigured = userData.passcodeConfigured === true;
+      let data: { success?: boolean; error?: string; lockout?: boolean; role?: string; uid?: string } = {};
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        throw new Error("Server error logging in. Please try again later.");
       }
 
-      // Reset password attempt count on success
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Invalid email or password.");
+      }
+
+      const role = data.role || "user";
       setPasswordAttempts(0);
 
-      // 3️⃣ Check Maintenance Mode
+      // Check Maintenance Mode
       const settings = await getSystemSettings();
       if (settings.maintenanceMode && role !== "admin") {
-        await signOut(auth);
         await clearAuthCookies();
         throw new Error("MAINTENANCE_MODE");
       }
 
-      // 4️⃣ Establish the app's own signed session (independently verifies
-      // idToken server-side rather than trusting anything set here).
-      const sessionRes = await fetch("/api/auth", {
+      // Check Passcode Configuration Status
+      const statusRes = await fetch("/api/auth/passcode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
+        body: JSON.stringify({ action: "check-status", email: email.trim() }),
       });
-      if (!sessionRes.ok) {
-        throw new Error("Failed to establish a secure session. Please try again.");
-      }
+      const statusData = await statusRes.json();
+      const passcodeConfigured = statusData?.passcodeConfigured === true;
 
-      // 5️⃣ Passcode setup/reset flow: mandatory for first-time users, and
-      // also routed here when the user explicitly asked to reset a
-      // forgotten passcode (their real password just proved their identity).
       if (!passcodeConfigured || forcePasscodeReset) {
         router.push(redirectUrl ? `/auth/setup-passcode?redirect=${encodeURIComponent(redirectUrl)}` : "/auth/setup-passcode");
         return;
       }
 
-      // Successful login trigger
       await triggerPreloader("login", 2000);
 
       if (role === "admin") {
@@ -239,20 +224,9 @@ function LoginContent() {
         router.push("/");
       }
     } catch (err: unknown) {
-      const errorObj = err as { code?: string; message?: string };
-      const nextFail = passwordAttempts + 1;
-      setPasswordAttempts(nextFail);
-
-      if (nextFail >= 3) {
-        setError("Too many failed attempts. Please reset your password.");
-      } else if (errorObj.message === "MAINTENANCE_MODE") {
+      const errorObj = err as { message?: string };
+      if (errorObj.message === "MAINTENANCE_MODE") {
         setError("The website is currently under maintenance. Please try again later.");
-      } else if (
-        errorObj.code === "auth/invalid-credential" ||
-        errorObj.code === "auth/user-not-found" ||
-        errorObj.code === "auth/wrong-password"
-      ) {
-        setError("Invalid email or password.");
       } else {
         setError(errorObj.message || "Failed to sign in. Please try again.");
       }

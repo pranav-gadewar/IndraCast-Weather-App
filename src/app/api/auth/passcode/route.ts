@@ -6,8 +6,7 @@ import {
   getFirestoreUserByEmail,
   updateFirestoreUserFields,
 } from "@/lib/firestoreRest";
-import { createSessionToken, SESSION_COOKIE_NAME, SESSION_MAX_AGE } from "@/lib/session";
-import { mintCustomToken } from "@/lib/firebaseAdmin";
+import { createSessionToken, verifySessionToken, SESSION_COOKIE_NAME, SESSION_MAX_AGE } from "@/lib/session";
 
 const MAX_PASSCODE_ATTEMPTS = 3;
 
@@ -44,7 +43,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 2. VERIFY PASSCODE AUTHENTICATION
+    // 2. VERIFY PASSCODE AUTHENTICATION (Pure Custom Authentication)
     if (action === "verify") {
       if (!email || !passcode) {
         return NextResponse.json({ success: false, error: "Email and passcode are required." }, { status: 400 });
@@ -109,21 +108,15 @@ export async function POST(request: NextRequest) {
         }, { status: 401 });
       }
 
-      // Successful passcode match: reset failed-attempt counter, issue our
-      // own signed session for middleware/route gating, AND mint a real
-      // Firebase custom token so the client can establish a genuine
-      // Firebase Auth session too (needed for direct Firestore client SDK
-      // reads elsewhere in the app, e.g. the admin panel).
+      // Successful passcode match: reset failed-attempt counter and issue our custom signed session
       await updateFirestoreUserFields(user.id, { failedPasscodeAttempts: 0 }, idToken);
       console.log(`[PASSCODE VERIFY] reason=success uid=${user.id}`);
 
       const sessionToken = await createSessionToken(user.id, user.role);
-      const customToken = await mintCustomToken(user.id, { role: user.role });
       const response = NextResponse.json({
         success: true,
         uid: user.id,
         role: user.role,
-        customToken,
         message: "Passcode verified successfully.",
       });
       response.cookies.set(SESSION_COOKIE_NAME, sessionToken, {
@@ -136,14 +129,14 @@ export async function POST(request: NextRequest) {
       return response;
     }
 
-    // 3. SETUP / RESET PASSCODE (requires the caller's real Firebase ID token)
+    // 3. SETUP / RESET PASSCODE
     if (action === "setup") {
-      if (!idToken) {
-        return NextResponse.json({ success: false, error: "Authentication required to configure a passcode." }, { status: 401 });
-      }
+      const session = await verifySessionToken(request.cookies.get(SESSION_COOKIE_NAME)?.value);
+      const activeUid = session?.uid || uid;
+      const userRole = session?.role || role || "user";
 
-      if (!newPasscode || (!uid && !email)) {
-        return NextResponse.json({ success: false, error: "Passcode and User ID/Email are required." }, { status: 400 });
+      if (!newPasscode) {
+        return NextResponse.json({ success: false, error: "Passcode is required." }, { status: 400 });
       }
 
       if (!isValidPasscode(newPasscode)) {
@@ -160,7 +153,7 @@ export async function POST(request: NextRequest) {
       const salt = await bcrypt.genSalt(10);
       const passcodeHash = await bcrypt.hash(newPasscode, salt);
 
-      let targetDocId = uid;
+      let targetDocId = activeUid;
       if (email && (!targetDocId || targetDocId.length < 5)) {
         const uByEmail = await getFirestoreUserByEmail(email, idToken);
         if (uByEmail) targetDocId = uByEmail.id;
@@ -192,11 +185,7 @@ export async function POST(request: NextRequest) {
         message: "6-digit passcode configured successfully.",
       });
 
-      // Establish/refresh the app session now that identity + role are
-      // confirmed, so the caller lands in an authenticated state without a
-      // second round trip. `role` is trusted here because the client just
-      // read it directly from this same user's own Firestore document.
-      const sessionToken = await createSessionToken(targetDocId, typeof role === "string" ? role : "user");
+      const sessionToken = await createSessionToken(targetDocId, typeof userRole === "string" ? userRole : "user");
       response.cookies.set(SESSION_COOKIE_NAME, sessionToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",

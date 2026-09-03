@@ -3,8 +3,6 @@
 import { useState, Suspense } from "react";
 import { Mail, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { auth } from "@/lib/firebase";
-import { sendPasswordResetEmail } from "firebase/auth";
 import { useSearchParams } from "next/navigation";
 
 function ForgotPasswordContent() {
@@ -17,14 +15,32 @@ function ForgotPasswordContent() {
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim()) return;
+
     try {
       setLoading(true);
       setError("");
       setMessage("");
 
-      await sendPasswordResetEmail(auth, email);
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
 
-      setMessage("Password reset link sent! Check your email inbox.");
+      let data: { success?: boolean; error?: string; message?: string } = {};
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        throw new Error("Server error processing reset request. Please try again later.");
+      }
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to send reset link.");
+      }
+
+      setMessage(data.message || "Password reset link sent! Check your email inbox.");
     } catch (err: unknown) {
       const errorObj = err as { message?: string };
       setError(errorObj.message || "Failed to send reset email.");

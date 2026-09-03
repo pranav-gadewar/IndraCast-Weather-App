@@ -1,11 +1,5 @@
 // Shared server-side helpers for talking to Firebase Auth / Firestore over
-// their public REST APIs. This project has no firebase-admin service
-// account, so these helpers are the closest we can get to trusted
-// server-side access: they either forward the caller's own Firebase ID
-// token (preferred, ties every request back to a real authenticated user)
-// or fall back to a short-lived anonymous token purely so unauthenticated
-// requests (e.g. passcode login, before any session exists) can perform the
-// narrow, rules-permitted lookups they need.
+// their public REST APIs.
 
 const FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 const FIREBASE_PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
@@ -17,10 +11,15 @@ export interface ParsedUserDoc {
   name: string;
   email: string;
   role: string;
+  passwordHash: string | null;
   passcodeHash: string | null;
   passcodeConfigured: boolean;
   failedPasscodeAttempts: number;
   failedPasswordAttempts: number;
+  passwordResetToken: string | null;
+  passwordResetExpires: number | null;
+  passcodeResetToken: string | null;
+  passcodeResetExpires: number | null;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,6 +33,7 @@ export function parseFirestoreDoc(doc: { name: string; fields?: Record<string, a
     name: fields.name?.stringValue || "",
     email: fields.email?.stringValue || "",
     role: fields.role?.stringValue || "user",
+    passwordHash: fields.passwordHash?.stringValue || null,
     passcodeHash: fields.passcodeHash?.stringValue || null,
     passcodeConfigured: fields.passcodeConfigured?.booleanValue || false,
     failedPasscodeAttempts: fields.failedPasscodeAttempts?.integerValue
@@ -42,14 +42,17 @@ export function parseFirestoreDoc(doc: { name: string; fields?: Record<string, a
     failedPasswordAttempts: fields.failedPasswordAttempts?.integerValue
       ? Number(fields.failedPasswordAttempts.integerValue)
       : 0,
+    passwordResetToken: fields.passwordResetToken?.stringValue || null,
+    passwordResetExpires: fields.passwordResetExpires?.integerValue
+      ? Number(fields.passwordResetExpires.integerValue)
+      : null,
+    passcodeResetToken: fields.passcodeResetToken?.stringValue || null,
+    passcodeResetExpires: fields.passcodeResetExpires?.integerValue
+      ? Number(fields.passcodeResetExpires.integerValue)
+      : null,
   };
 }
 
-// Obtains a short-lived anonymous Firebase Auth token, used only when no
-// real user ID token is available (e.g. an unauthenticated passcode-login
-// attempt). Requires the Anonymous sign-in provider to be enabled; if it
-// isn't, this returns null and callers fall back to an unauthenticated
-// request (still permitted for the narrow reads Firestore rules allow).
 async function getServerAuthToken(): Promise<string | null> {
   if (!FIREBASE_API_KEY) return null;
   try {
@@ -69,15 +72,6 @@ async function getServerAuthToken(): Promise<string | null> {
   }
 }
 
-async function resolveToken(idToken?: string): Promise<string | undefined> {
-  if (idToken) return idToken;
-  return (await getServerAuthToken()) || undefined;
-}
-
-// Verifies a Firebase Auth ID token by asking Identity Toolkit about it
-// directly. This is the REST-only equivalent of firebase-admin's
-// verifyIdToken(): if the token is malformed, expired, or forged, Google
-// rejects the lookup and we return null.
 export async function verifyFirebaseIdToken(
   idToken: string
 ): Promise<{ uid: string; email: string | null } | null> {
@@ -103,6 +97,11 @@ export async function verifyFirebaseIdToken(
   }
 }
 
+async function resolveToken(idToken?: string): Promise<string | undefined> {
+  if (idToken) return idToken;
+  return (await getServerAuthToken()) || undefined;
+}
+
 export async function getFirestoreUserById(uid: string, idToken?: string): Promise<ParsedUserDoc | null> {
   if (!FIREBASE_PROJECT_ID || !FIREBASE_API_KEY || !uid) return null;
 
@@ -122,10 +121,6 @@ export async function getFirestoreUserById(uid: string, idToken?: string): Promi
   }
 }
 
-// Looks a user up by email. Firestore REST queries are case-sensitive, so
-// the primary runQuery attempt normalizes the target email but relies on
-// the stored `email` field already being normalized too; the full-collection
-// fallback normalizes both sides defensively in case older records aren't.
 export async function getFirestoreUserByEmail(email: string, idToken?: string): Promise<ParsedUserDoc | null> {
   if (!FIREBASE_PROJECT_ID || !FIREBASE_API_KEY) return null;
 
@@ -167,8 +162,7 @@ export async function getFirestoreUserByEmail(email: string, idToken?: string): 
     console.error("[firestoreRest] runQuery-by-email failed:", err);
   }
 
-  // Method 2: full collection scan with case-insensitive compare (fallback
-  // for legacy records whose stored email wasn't normalized at write time)
+  // Method 2: full collection scan with case-insensitive compare (fallback)
   try {
     const listUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/users?key=${FIREBASE_API_KEY}`;
     const res = await fetch(listUrl, { headers });

@@ -20,9 +20,6 @@ import {
 import { useTheme } from "next-themes";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { auth, db } from "@/lib/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { getSystemSettings } from "@/lib/systemSettings";
 
 function SignupContent() {
@@ -73,63 +70,37 @@ function SignupContent() {
       setLoading(true);
       setError("");
 
-      // Check Registration System Settings
       const settings = await getSystemSettings();
       if (!settings.userRegistration) {
-        throw new Error("REGISTRATION_PAUSED");
+        throw new Error("New user registrations are currently paused by system administration.");
       }
 
       if (!form.email || !form.password || !form.name) {
         throw new Error("Please fill in all required fields (Name, Email, Password).");
       }
 
-      const normalizedEmail = form.email.toLowerCase().trim();
-
-      // 1️⃣ Create Firebase auth user
-      const userCred = await createUserWithEmailAndPassword(
-        auth,
-        normalizedEmail,
-        form.password
-      );
-
-      const user = userCred.user;
-      const idToken = await user.getIdToken();
-
-      // 2️⃣ Store user metadata in Firestore. Email is normalized here so
-      // every later passcode lookup (which also normalizes) reliably matches.
-      await setDoc(doc(db, "users", user.uid), {
-        name: form.name,
-        email: normalizedEmail,
-        phone: form.phone || "",
-        gender: form.gender || "",
-        age: form.age || "",
-        city: form.city || "",
-        state: form.state || "",
-        country: "India",
-        role: "user",
-        createdAt: serverTimestamp(),
-      });
-
-      // 3️⃣ Establish the app's own signed session
-      await fetch("/api/auth", {
+      const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
+        body: JSON.stringify(form),
       });
 
-      // 4️⃣ Redirect post-signup to mandatory passcode setup
+      let data: { success?: boolean; error?: string; uid?: string; role?: string } = {};
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        throw new Error("Server error handling account creation. Please try again later.");
+      }
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to create account.");
+      }
+
       router.push(redirectUrl ? `/auth/setup-passcode?redirect=${encodeURIComponent(redirectUrl)}` : "/auth/setup-passcode");
     } catch (err: unknown) {
-      const errorObj = err as { code?: string; message?: string };
-      if (errorObj.message === "REGISTRATION_PAUSED") {
-        setError("New user registrations are currently paused by system administration.");
-      } else if (errorObj.code === "auth/email-already-in-use") {
-        setError("This email address is already in use.");
-      } else if (errorObj.code === "auth/weak-password") {
-        setError("Password should be at least 6 characters long.");
-      } else {
-        setError(errorObj.message || "Failed to create account.");
-      }
+      const errorObj = err as { message?: string };
+      setError(errorObj.message || "Failed to create account.");
     } finally {
       setLoading(false);
     }
