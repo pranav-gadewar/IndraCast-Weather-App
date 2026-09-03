@@ -34,6 +34,7 @@ export function isFirebaseAdminConfigured(): boolean {
 // way to establish one (there's no password to sign in with).
 export async function mintCustomToken(uid: string, claims?: Record<string, unknown>): Promise<string | null> {
   try {
+    if (!isFirebaseAdminConfigured()) return null;
     const app = getAdminApp();
     return await getAuth(app).createCustomToken(uid, claims);
   } catch (err) {

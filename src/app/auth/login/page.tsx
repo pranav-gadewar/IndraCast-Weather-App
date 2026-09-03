@@ -107,7 +107,13 @@ function LoginContent() {
         }),
       });
 
-      const data = await res.json();
+      let data: { success?: boolean; error?: string; lockout?: boolean; failedAttempts?: number; role?: string; customToken?: string | null; uid?: string } = {};
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        throw new Error("Server error handling passcode authentication. Please try again later.");
+      }
 
       if (!res.ok || !data.success) {
         const nextAttempts = (data.failedAttempts !== undefined) ? data.failedAttempts : passcodeAttempts + 1;

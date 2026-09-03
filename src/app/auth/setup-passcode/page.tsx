@@ -146,7 +146,13 @@ function PasscodeSetupContent() {
         }),
       });
 
-      const data = await res.json();
+      let data: { success?: boolean; error?: string } = {};
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        throw new Error("Server error handling passcode setup. Please try again later.");
+      }
 
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Failed to set 6-digit passcode.");
